@@ -1,14 +1,17 @@
-import React, { createRef, useEffect } from "react";
-import { Pressable, View } from "react-native";
+import React from "react";
+import { Pressable, ScrollView, View } from "react-native";
 
-type props<T> = {
+type props<T, E> = {
 	data: T[];
-	renderer: (props: { item: T }) => JSX.Element;
+	renderer: (props: { item: T; extra: E }) => JSX.Element;
 	columns: number;
+	extra_props?: E;
 };
 
-export const MasonryList = <T,>(props: props<T>): JSX.Element => {
+export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 	let children: JSX.Element[] = [];
+	let columns: JSX.Element[][] = [];
+	let current_column = 0;
 
 	props.data.forEach((element, index) => {
 		// todo: dragging behavior
@@ -21,17 +24,14 @@ export const MasonryList = <T,>(props: props<T>): JSX.Element => {
 					// console.log("End");
 				}}
 				key={index}
-				style={{ width: "100%" }}
+				style={{}}
 			>
-				{props.renderer({ item: element })}
+				{props.renderer({ item: element, extra: props.extra_props! })}
 			</Pressable>
 		);
 	});
 
-	let current_column = 0;
-	let columns: JSX.Element[][] = [];
 	children.forEach((element) => {
-		console.log(current_column);
 		columns[current_column] = columns[current_column] || [];
 		columns[current_column].push(element);
 
@@ -40,19 +40,21 @@ export const MasonryList = <T,>(props: props<T>): JSX.Element => {
 	});
 
 	return (
-		<View style={{ width: "100%", height: "100%", flex: 1, flexDirection: "row" }}>
-			{columns.map((value, index) => (
-				<View
-					style={{
-						flex: 1,
-						width: `${Math.floor((1 / props.columns) * 100)}%`,
-						flexDirection: "column",
-					}}
-					key={index}
-				>
-					{value}
-				</View>
-			))}
+		<View style={{ flex: 1, flexDirection: "row" }}>
+			{columns.map((value, index) => {
+				return (
+					<View
+						style={{
+							flex: 1,
+							width: `${Math.floor((1 / props.columns) * 100)}%`,
+							flexDirection: "column",
+						}}
+						key={index}
+					>
+						{value}
+					</View>
+				);
+			})}
 		</View>
 	);
 };

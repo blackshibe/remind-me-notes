@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 
-import { BackHandler, Text, TouchableOpacity, View } from "react-native";
+import { BackHandler, Text, TextInput, TextInputBase, TouchableOpacity, View } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, selectNote, store, todoAdded } from "../store";
+import { AppStoreState, selectNote, store, addTodo, highlightNote } from "../store";
 import { BACKGROUND_COLOR, FOREGROUND_COLOR, styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 
@@ -21,13 +21,14 @@ const Item = (props: { item: string }) => {
 	);
 };
 
-export default function Note() {
-	const todos = useSelector((state: AppStoreState) => state.todos);
+export default function Note(props: { navigation: any }) {
+	const todos = useSelector((state: AppStoreState) => state.notes);
 	const store = useStore();
 
 	useEffect(() => {
 		let l = BackHandler.addEventListener("hardwareBackPress", () => {
-			store.dispatch(selectNote());
+			props.navigation.navigate("Main");
+			store.dispatch(highlightNote());
 
 			return true;
 		});
@@ -37,9 +38,11 @@ export default function Note() {
 
 	return (
 		<View style={styles.pageContainer}>
-			<View style={{ padding: 32 }}>
-				<Text style={[styles.text, styles.header]}>Note.tsx</Text>
-				<Text style={[styles.text]}>Content</Text>
+			<View style={{ padding: 16 }}>
+				<TextInput style={[styles.text, styles.header]}>Note.tsx</TextInput>
+				<TextInput style={[styles.text]} multiline={true}>
+					Content
+				</TextInput>
 			</View>
 		</View>
 	);

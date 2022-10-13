@@ -9,3 +9,4 @@ Phone app something something
 -   Fullscreen reminder editor
 -   Dragging notes around in MasonryList
 -   Light/Dark theme
+-   make IDs when adding new notes never repeat
