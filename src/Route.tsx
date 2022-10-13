@@ -9,6 +9,7 @@ import Settings from "./route/Reminders";
 import App from "./route/Notes";
 import Test from "./route/Test";
 import { View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 export type NavigationPlaceholder = {
 	navigate: (arg0: string) => void;
@@ -25,7 +26,7 @@ export default function Route(props: props) {
 	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
 		if (selected_note) props.navigation.navigate("Note");
-	});
+	}, [selected_note]);
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "black" }}>

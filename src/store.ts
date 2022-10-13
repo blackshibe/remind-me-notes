@@ -68,8 +68,10 @@ export async function createStore() {
 	});
 
 	store.subscribe(() => {
+		let store_state = store.getState();
+		store_state.selected_note = undefined;
 		console.log("Saving data, todo: cooldown to saving data");
-		FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(store.getState()));
+		FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(store_state));
 	});
 
 	return store;

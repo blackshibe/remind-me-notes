@@ -27,8 +27,8 @@ export default function Note(props: { navigation: any }) {
 
 	useEffect(() => {
 		let l = BackHandler.addEventListener("hardwareBackPress", () => {
-			props.navigation.navigate("Main");
 			store.dispatch(highlightNote());
+			props.navigation.navigate("Main");
 
 			return true;
 		});
