@@ -1,19 +1,18 @@
 import React from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
-import getAppTheme from "../style/styles";
+import { Alert, Button, Text, TouchableOpacity, View } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { addNote, AppStoreState, deleteNote } from "../store";
+import { addReminder, addNote, AppStoreState, deleteNote, deleteReminder } from "../store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import getAppTheme from "../style/styles";
 
-// TODO: import BottomTabHeaderProps
-export const Header = (props: { route: { name?: string } }): JSX.Element => {
-	const store = useStore();
+export const RemindersHeader = (props: { route: { name?: string } }): JSX.Element => {
 	const mainStyle = getAppTheme();
+	const store = useStore();
 	const { top } = useSafeAreaInsets();
 
-	let state = useSelector((state: AppStoreState) => state.notes);
+	let state = useSelector((state: AppStoreState) => state.reminders);
 	let isSelecting = state.find((value) => value.selected);
 
 	const deleteNotes = () => {
@@ -26,15 +25,15 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 				text: "OK",
 				onPress: () => {
 					state.forEach((element) => {
-						if (element.selected) store.dispatch(deleteNote(element.id));
+						if (element.selected) store.dispatch(deleteReminder(element.id));
 					});
 				},
 			},
 		]);
 	};
 
-	const addNewNote = () => {
-		store.dispatch(addNote({ header: "New Note", text: "text" }));
+	const addNote = () => {
+		store.dispatch(addReminder({ text: "text" }));
 	};
 
 	return (
@@ -44,7 +43,7 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 				<TouchableOpacity
 					hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
 					style={{ height: 32, width: 32, justifyContent: "center" }}
-					onPress={isSelecting ? deleteNotes : addNewNote}
+					onPress={isSelecting ? deleteNotes : addNote}
 				>
 					<Icon name={isSelecting ? "delete" : "add"} size={32} color={mainStyle.color} />
 				</TouchableOpacity>

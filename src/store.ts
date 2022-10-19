@@ -10,29 +10,45 @@ export type note = {
 	selected?: boolean;
 };
 
-type selectNote = {
-	a: string;
+export type reminder = {
+	due_time: number;
+	text: string;
+	id: number;
+	selected?: boolean;
 };
 
+type noteEdit = {
+	id: number;
+	text?: string;
+	header?: string;
+};
+
+type selectedNote = { type: "note" | "reminder"; id: number };
 export type AppStoreState = {
 	notes: note[];
+	reminders: reminder[];
+
 	next_note_id: number;
-	selected_note?: selectNote;
+	next_reminder_id: number;
+
+	push_token?: string;
+	selected_note?: selectedNote;
 };
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage.json`;
+const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v3.json`;
 
-let initialState: AppStoreState = { notes: [], next_note_id: 0 };
+let initialState: AppStoreState = { notes: [], reminders: [], next_note_id: 1, next_reminder_id: 1 };
 let todosSlice = createSlice({
 	name: "todos",
 	initialState: () => initialState,
 	reducers: {
-		highlightNote(state: AppStoreState, action: wrap<selectNote | undefined>) {
+		openNote(state: AppStoreState, action: wrap<selectedNote | undefined>) {
 			state.selected_note = action.payload;
 		},
-		addTodo(state: AppStoreState, action: wrap<{ text: string; header: string }>) {
+
+		addNote(state: AppStoreState, action: wrap<{ text: string; header: string }>) {
 			state.notes.push({
 				text: action.payload.text,
 				header: action.payload.header,
@@ -41,24 +57,70 @@ let todosSlice = createSlice({
 
 			state.next_note_id += 1;
 		},
+		addReminder(state: AppStoreState, action: wrap<{ text: string }>) {
+			state.reminders.push({
+				due_time: new Date().getTime() + 60 * 60 * 1000,
+				text: action.payload.text,
+				id: state.next_reminder_id,
+			});
+
+			state.next_reminder_id += 1;
+		},
+
 		selectNote(state: AppStoreState, action: wrap<number>) {
 			let note = state.notes.find((value) => value.id === action.payload);
 			if (note) note.selected = !note.selected;
 		},
+		selectReminder(state: AppStoreState, action: wrap<number>) {
+			let reminder = state.reminders.find((value) => value.id === action.payload);
+			if (reminder) reminder.selected = !reminder.selected;
+		},
+
 		deleteNote(state: AppStoreState, action: wrap<number>) {
 			state.notes = state.notes.filter((value) => action.payload != value.id);
 		},
-		restoreFromStorage(state: AppStoreState, action: wrap<AppStoreState>) {
-			state = action.payload;
+		deleteReminder(state: AppStoreState, action: wrap<number>) {
+			state.reminders = state.reminders.filter((value) => action.payload != value.id);
+		},
+
+		editNote(state: AppStoreState, action: wrap<noteEdit>) {
+			let note = state.notes.find((value) => value.id === action.payload.id);
+			if (note) {
+				let new_header = action.payload.header;
+				let new_content = action.payload.text;
+				if (new_header !== undefined) note.header = new_header;
+				if (new_content !== undefined) note.text = new_content;
+			}
+		},
+		editReminder(state: AppStoreState, action: wrap<noteEdit>) {
+			let note = state.reminders.find((value) => value.id === action.payload.id);
+			if (note) {
+				let new_content = action.payload.text;
+				if (new_content !== undefined) note.text = new_content;
+			}
+		},
+
+		setPushToken(state: AppStoreState, action: wrap<string>) {
+			state.push_token = action.payload;
 		},
 	},
 });
 
-export const { highlightNote, selectNote, addTodo, deleteNote } = todosSlice.actions;
+export const {
+	setPushToken,
+	openNote,
+	selectNote,
+	addNote,
+	deleteNote,
+	editNote,
+	addReminder,
+	editReminder,
+	deleteReminder,
+	selectReminder,
+} = todosSlice.actions;
 export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)
 		.then((value) => {
-			console.log(value);
 			initialState = JSON.parse(value);
 		})
 		.catch(console.log);
@@ -68,10 +130,13 @@ export async function createStore() {
 	});
 
 	store.subscribe(() => {
-		let store_state = store.getState();
-		store_state.selected_note = undefined;
-		console.log("Saving data, todo: cooldown to saving data");
-		FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(store_state));
+		new Promise(() => {
+			let store_state = store.getState();
+			store_state.selected_note = undefined;
+			// i'm lazy
+			console.log("todo: cooldown to saving redux state");
+			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(store_state));
+		});
 	});
 
 	return store;

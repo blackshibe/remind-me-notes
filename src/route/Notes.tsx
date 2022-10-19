@@ -2,15 +2,10 @@ import React from "react";
 
 import { ScrollView, Text, TouchableOpacity, Vibration, View } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, note, selectNote, store, addTodo, highlightNote } from "../store";
-import { BACKGROUND_COLOR, FOREGROUND_COLOR, styles } from "../style/styles";
+import { AppStoreState, note, addNote, openNote, selectNote, AppStore } from "../store";
+import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/NotesHeader";
-
-const light_blue = {
-	borderColor: "lightblue",
-	color: "lightblue",
-};
 
 const selected = {
 	borderWidth: 1,
@@ -18,19 +13,28 @@ const selected = {
 	color: "rgb(100,200,255)",
 };
 
-const Item = (props: { item: note; extra: { store: typeof store } }) => {
+const Item = (props: {
+	item: note;
+	extra: { store: AppStore; mainStyle: { backgroundColor: string; color: string } };
+}) => {
 	const store = props.extra.store;
+	const mainStyle = props.extra.mainStyle;
+
 	let is_selecting = store.getState().notes.find((value) => value.selected);
 	let selection_style = props.item.selected ? selected : undefined;
 
 	return (
 		<TouchableOpacity
-			style={[styles.note, selection_style]}
+			style={[
+				styles.note,
+				{ backgroundColor: mainStyle.backgroundColor, borderColor: mainStyle.color },
+				selection_style,
+			]}
 			onPress={() => {
 				if (is_selecting) {
 					store.dispatch(selectNote(props.item.id));
 				} else {
-					store.dispatch(highlightNote({ a: "lol" }));
+					store.dispatch(openNote({ type: "note", id: props.item.id }));
 				}
 			}}
 			onLongPress={() => {
@@ -38,21 +42,22 @@ const Item = (props: { item: note; extra: { store: typeof store } }) => {
 				store.dispatch(selectNote(props.item.id));
 			}}
 		>
-			{props.item.header ? <Text style={[styles.headerSmall]}>{props.item.header}</Text> : undefined}
-			{props.item.text ? <Text style={[styles.text]}>{props.item.text}</Text> : undefined}
+			{props.item.header ? <Text style={[styles.headerSmall, mainStyle]}>{props.item.header}</Text> : undefined}
+			{props.item.text ? <Text style={[mainStyle]}>{props.item.text}</Text> : undefined}
 		</TouchableOpacity>
 	);
 };
 
 export default function Notes() {
+	const mainStyle = getAppTheme();
 	const todos = useSelector((state: AppStoreState) => state.notes);
 	const store = useStore<AppStoreState>();
 
 	return (
-		<View style={styles.pageContainer}>
+		<View style={[styles.pageContainer, mainStyle]}>
 			<Header route={{ name: "Notes" }} />
 			{todos.length === 0 ? (
-				<Text style={[styles.text, { width: "100%", textAlign: "center" }]}>No notes added yet...</Text>
+				<Text style={[mainStyle, { width: "100%", textAlign: "center" }]}>No notes added yet...</Text>
 			) : (
 				<ScrollView
 					style={{
@@ -62,7 +67,7 @@ export default function Notes() {
 						width: "100%",
 					}}
 				>
-					<MasonryList data={[...todos]} renderer={Item} columns={2} extra_props={{ store: store }} />
+					<MasonryList data={[...todos]} renderer={Item} columns={2} extra_props={{ store, mainStyle }} />
 				</ScrollView>
 			)}
 		</View>

@@ -46,7 +46,6 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 					<View
 						style={{
 							flex: 1,
-							width: `${Math.floor((1 / props.columns) * 100)}%`,
 							flexDirection: "column",
 						}}
 						key={index}

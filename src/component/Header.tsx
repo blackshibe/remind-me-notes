@@ -1,32 +1,29 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { appBackgroundTheme } from "../style/styles";
 import { StyleSheet } from "react-native";
-import { useSelector } from "react-redux";
-import { AppStoreState } from "../store";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import getAppTheme from "../style/styles";
 
 // TODO: import BottomTabHeaderProps
 export const Header = (props: { route: { name?: string } }): JSX.Element => {
-	// let state = useSelector((state: AppStoreState) => state.notes);
-	// let is_selecting = state.find((value) => value.selected);
+	const { top } = useSafeAreaInsets();
+	const mainStyle = getAppTheme();
 
 	return (
-		<View style={styles.tabHeader}>
-			<Text style={styles.tabHeaderText}>{props.route.name}</Text>
+		<View style={[styles.tabHeader, mainStyle, { marginTop: top }]}>
+			<Text style={[styles.tabHeaderText, mainStyle]}>{props.route.name}</Text>
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	tabHeader: {
-		...appBackgroundTheme,
-		height: 100,
+		width: "100%",
 		padding: 16,
-		alignItems: "flex-start",
-		justifyContent: "flex-end",
+		flexDirection: "row",
+		justifyContent: "space-between",
 	},
 	tabHeaderText: {
-		...appBackgroundTheme,
 		fontSize: 30,
 	},
 });

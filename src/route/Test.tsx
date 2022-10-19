@@ -1,24 +1,66 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { StatusBar } from "expo-status-bar";
 import { Button, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
-import { AppStoreState, store, addTodo } from "../store";
-import { styles } from "../style/styles";
+import { AppStoreState } from "../store";
+import getAppTheme, { styles } from "../style/styles";
 import { Header } from "../component/Header";
+import * as Notifications from "expo-notifications";
+import usePromise from "../util/usePromise";
+import { useThemeMode } from "@rneui/themed";
 
 export default function Test() {
+	const mainStyle = getAppTheme();
+	const { mode, setMode } = useThemeMode();
 	const todos = useSelector((state: AppStoreState) => state.notes);
+	const [scheduled, setScheduled] = useState<any[]>([]);
+
+	usePromise(async () => {
+		setScheduled(await Notifications.getAllScheduledNotificationsAsync());
+	});
 
 	return (
-		<View style={styles.pageContainer}>
+		<View style={[styles.pageContainer, mainStyle]}>
 			<Header route={{ name: "Test" }} />
 
-			<Text style={[styles.text, { marginLeft: 16, marginBottom: 16 }]}>
+			<Text style={[mainStyle, { marginLeft: 16, marginBottom: 16 }]}>
 				Open up App.tsx to start working on your app!
 			</Text>
+			<Button
+				onPress={async () => {
+					setScheduled(await Notifications.getAllScheduledNotificationsAsync());
+				}}
+				title={"reload scheduled notifications"}
+			/>
+			<Button
+				onPress={() => {
+					Notifications.scheduleNotificationAsync({
+						content: {
+							title: "Run",
+							body: "There is a man coming to your house",
+							data: { data: "goes here" },
+						},
+						trigger: { channelId: "default", date: new Date().getTime() + 5 * 1000 },
+					});
+				}}
+				title={"schedule notification"}
+			/>
+			<Button
+				onPress={async () => {
+					setMode("dark");
+				}}
+				title={"dark mode"}
+			/>
+			<Button
+				onPress={async () => {
+					setMode("light");
+				}}
+				title={"light mode"}
+			/>
 			<ScrollView style={{ width: "100%" }}>
-				<Text style={styles.text}>{JSON.stringify(todos, null, 4)}</Text>
+				<Text style={mainStyle}>{JSON.stringify(todos, null, 4)}</Text>
+				<Text style={mainStyle}>{JSON.stringify(scheduled, null, 4)}</Text>
 			</ScrollView>
 		</View>
 	);

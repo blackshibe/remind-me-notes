@@ -1,48 +1,70 @@
 import React from "react";
 
-import { StatusBar } from "expo-status-bar";
-import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSelector } from "react-redux";
-import { AppStoreState, store, addTodo } from "../store";
-import { BACKGROUND_COLOR, FOREGROUND_COLOR, styles } from "../style/styles";
+import { ScrollView, Text, TouchableOpacity, Vibration, View } from "react-native";
+import { useSelector, useStore } from "react-redux";
+import { AppStoreState, addNote, reminder, AppStore, selectNote, selectReminder, openNote } from "../store";
+import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
-import { Header } from "../component/Header";
+import { RemindersHeader } from "../component/RemindersHeader";
 
-const Item = (props: { item: string }) => {
+const selected = {
+	borderWidth: 1,
+	borderColor: "rgb(100,200,255)",
+	color: "rgb(100,200,255)",
+};
+
+const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any } }) => {
+	const store = props.extra.store;
+	const mainStyle = props.extra.mainStyle;
+
+	let is_selecting = store.getState().reminders.find((value) => value.selected);
+	let selection_style = props.item.selected ? selected : undefined;
+
 	return (
 		<TouchableOpacity
-			style={[
-				styles.note,
-				{
-					backgroundColor: "lightblue",
-				},
-			]}
+			style={[styles.note, { borderColor: mainStyle.color }, selection_style]}
+			onPress={() => {
+				if (is_selecting) {
+					store.dispatch(selectReminder(props.item.id));
+				} else {
+					store.dispatch(openNote({ type: "reminder", id: props.item.id }));
+				}
+			}}
+			onLongPress={() => {
+				Vibration.vibrate(50);
+				store.dispatch(selectReminder(props.item.id));
+			}}
 		>
-			<Text style={[styles.text, styles.headerSmall]}>due tomorrow</Text>
-			<Text style={{ ...styles.text, color: "grey", marginBottom: 10 }}>14th Oct, Tuesday</Text>
-			<Text style={styles.text}>{props.item}</Text>
+			<Text style={[mainStyle, styles.headerSmall]}>due tomorrow</Text>
+			<Text style={{ color: "grey", marginBottom: 10 }}>14th Oct, Tuesday</Text>
+			{props.item.text ? <Text style={mainStyle}>{props.item.text}</Text> : undefined}
 		</TouchableOpacity>
 	);
 };
 
 export default function Reminders() {
-	const todos = useSelector((state: AppStoreState) => state.notes);
+	const mainStyle = getAppTheme();
+
+	const reminders = useSelector((state: AppStoreState) => state.reminders);
+	const store = useStore<AppStoreState>();
 
 	return (
-		<View style={[styles.pageContainer]}>
-			<Header route={{ name: "Reminders" }} />
-
-			<Text style={styles.text}>Reminders</Text>
-
-			<MasonryList data={["1\n\n\n\n1", "2", "3", "4", "5", "6", "7"]} renderer={Item} columns={2} />
-
-			<Button
-				title="the thing"
-				onPress={() => {
-					console.log("fuck");
-					// store.dispatch(addTodo({ id }));
-				}}
-			/>
+		<View style={[styles.pageContainer, mainStyle]}>
+			<RemindersHeader route={{ name: "Reminders" }} />
+			{reminders.length === 0 ? (
+				<Text style={[mainStyle, { width: "100%", textAlign: "center" }]}>No reminders added yet...</Text>
+			) : (
+				<ScrollView
+					style={{
+						flex: 1, // the number of columns you want to devide the screen into
+						marginHorizontal: "auto",
+						marginTop: 16,
+						width: "100%",
+					}}
+				>
+					<MasonryList data={reminders} renderer={Item} columns={2} extra_props={{ store, mainStyle }} />
+				</ScrollView>
+			)}
 		</View>
 	);
 }
