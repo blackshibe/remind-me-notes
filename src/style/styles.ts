@@ -43,8 +43,7 @@ export const styles = StyleSheet.create({
 	invertedNote: {
 		borderRadius: 8,
 		justifyContent: "center",
-		marginRight: 4,
-		marginLeft: 4,
+		margin: 4,
 	},
 
 	pageContainer: {

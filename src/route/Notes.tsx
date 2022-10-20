@@ -13,6 +13,7 @@ const selected = {
 	color: "rgb(100,200,255)",
 };
 
+// FIXME type mainStyle properly everywhere
 const Item = (props: {
 	item: note;
 	extra: { store: AppStore; mainStyle: { backgroundColor: string; color: string } };

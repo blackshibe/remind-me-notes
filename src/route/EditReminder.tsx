@@ -8,6 +8,7 @@ import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/Header";
 import { Icon } from "@rneui/themed";
 
+// TODO: merge with EditNote or some shit
 export default function EditReminder(props: { selected_id: number; navigation: any }) {
 	const mainStyle = getAppTheme();
 	const reminders = useSelector((state: AppStoreState) => state.reminders);
@@ -30,7 +31,7 @@ export default function EditReminder(props: { selected_id: number; navigation: a
 	}, []);
 
 	return (
-		<View style={styles.pageContainer}>
+		<View style={[styles.pageContainer, mainStyle]}>
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 16, padding: 8 }]}>
 					<TextInput

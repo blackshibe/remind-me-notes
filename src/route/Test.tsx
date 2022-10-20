@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-import { StatusBar } from "expo-status-bar";
 import { Button, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 import { AppStoreState } from "../store";
 import getAppTheme, { styles } from "../style/styles";
-import { Header } from "../component/Header";
-import * as Notifications from "expo-notifications";
 import usePromise from "../util/usePromise";
+import { Header } from "../component/Header";
 import { useThemeMode } from "@rneui/themed";
+
+import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
 
 export default function Test() {
 	const mainStyle = getAppTheme();
@@ -57,6 +58,16 @@ export default function Test() {
 					setMode("light");
 				}}
 				title={"light mode"}
+			/>
+			<Button
+				onPress={async () => {
+					let result = await ImagePicker.launchImageLibraryAsync({
+						allowsEditing: true,
+						aspect: [4, 3],
+					});
+					console.log(result);
+				}}
+				title={"pick image"}
 			/>
 			<ScrollView style={{ width: "100%" }}>
 				<Text style={mainStyle}>{JSON.stringify(todos, null, 4)}</Text>
