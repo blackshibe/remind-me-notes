@@ -8,6 +8,14 @@ export type note = {
 	text: string;
 	id: number;
 	selected?: boolean;
+	files: file[];
+};
+
+export type file = {
+	type: "image" | "unknown";
+	uri: string;
+	name: string;
+	id: number;
 };
 
 export type reminder = {
@@ -15,6 +23,7 @@ export type reminder = {
 	text: string;
 	id: number;
 	selected?: boolean;
+	files: file[];
 };
 
 type noteEdit = {
@@ -30,6 +39,7 @@ export type AppStoreState = {
 
 	next_note_id: number;
 	next_reminder_id: number;
+	next_file_id: number;
 
 	push_token?: string;
 	selected_note?: selectedNote;
@@ -37,9 +47,9 @@ export type AppStoreState = {
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v3.json`;
+const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v5.json`;
 
-let initialState: AppStoreState = { notes: [], reminders: [], next_note_id: 1, next_reminder_id: 1 };
+let initialState: AppStoreState = { notes: [], reminders: [], next_note_id: 1, next_reminder_id: 1, next_file_id: 1 };
 let todosSlice = createSlice({
 	name: "todos",
 	initialState: () => initialState,
@@ -48,11 +58,33 @@ let todosSlice = createSlice({
 			state.selected_note = action.payload;
 		},
 
+		attachFileToNote(
+			state: AppStoreState,
+			action: wrap<{ file: { type: "image" | "unknown"; uri: string; name: string }; id: number }>
+		) {
+			let note = state.notes.find((value) => value.id === action.payload.id);
+			if (note)
+				note.files.push({
+					id: state.next_file_id,
+					type: action.payload.file.type,
+					uri: action.payload.file.uri,
+					name: action.payload.file.name,
+				});
+
+			state.next_file_id += 1;
+		},
+
+		deleteFileFromNote(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
+			let note = state.notes.find((value) => value.id === action.payload.note_id);
+			if (note) note.files = note.files.filter((value) => action.payload.file_id != value.id);
+		},
+
 		addNote(state: AppStoreState, action: wrap<{ text: string; header: string }>) {
 			state.notes.push({
 				text: action.payload.text,
 				header: action.payload.header,
 				id: state.next_note_id,
+				files: [],
 			});
 
 			state.next_note_id += 1;
@@ -62,6 +94,7 @@ let todosSlice = createSlice({
 				due_time: new Date().getTime() + 60 * 60 * 1000,
 				text: action.payload.text,
 				id: state.next_reminder_id,
+				files: [],
 			});
 
 			state.next_reminder_id += 1;
@@ -117,6 +150,8 @@ export const {
 	editReminder,
 	deleteReminder,
 	selectReminder,
+	deleteFileFromNote,
+	attachFileToNote,
 } = todosSlice.actions;
 export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)

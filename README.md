@@ -4,9 +4,12 @@ Phone app something something
 
 ## todo
 
--   Design how notes/reminders will be split and work
--   Fullscreen note editor
--   Fullscreen reminder editor
+-   Design how notes/reminders will be split and work [x]
+-   Fullscreen note editor [x]
+-   Fullscreen reminder editor [x]
+-   Light/Dark theme [x]
+-   make IDs when adding new notes never repeat [x]
 -   Dragging notes around in MasonryList
--   Light/Dark theme
--   make IDs when adding new notes never repeat
+-   Themable components
+-   General note/reminder logic(?)
+-   File picker

@@ -1,43 +1,35 @@
 import React from "react";
-import { Alert, Button, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Button, Text, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { addReminder, addNote, AppStoreState, deleteNote, deleteReminder } from "../store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import getAppTheme from "../style/styles";
+import quickWarnAlert from "../util/quickWarnAlert";
+import { View } from "../style/customComponents";
 
 export const RemindersHeader = (props: { route: { name?: string } }): JSX.Element => {
-	const mainStyle = getAppTheme();
 	const store = useStore();
 	const { top } = useSafeAreaInsets();
+	const mainStyle = getAppTheme();
 
 	let state = useSelector((state: AppStoreState) => state.reminders);
 	let isSelecting = state.find((value) => value.selected);
 
-	const deleteNotes = () => {
-		Alert.alert("Delete warning", "Delete the selected notes?", [
-			{
-				text: "Cancel",
-				style: "cancel",
-			},
-			{
-				text: "OK",
-				onPress: () => {
-					state.forEach((element) => {
-						if (element.selected) store.dispatch(deleteReminder(element.id));
-					});
-				},
-			},
-		]);
-	};
+	const deleteNotes = () =>
+		quickWarnAlert(() => {
+			state.forEach((element) => {
+				if (element.selected) store.dispatch(deleteReminder(element.id));
+			});
+		}, "Delete the selected reminders?");
 
 	const addNote = () => {
 		store.dispatch(addReminder({ text: "text" }));
 	};
 
 	return (
-		<View style={[styles.tabHeader, { marginTop: top }, mainStyle]}>
+		<View style={[styles.tabHeader, { marginTop: top }]}>
 			<Text style={[styles.tabHeaderText, mainStyle]}>{props.route.name}</Text>
 			<View style={{}}>
 				<TouchableOpacity

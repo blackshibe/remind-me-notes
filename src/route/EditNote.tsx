@@ -1,24 +1,13 @@
-import React, { createRef, useEffect, useState } from "react";
-
-import {
-	BackHandler,
-	Image,
-	ScrollView,
-	Text,
-	TextInput,
-	TextInputBase,
-	TouchableOpacity,
-	Vibration,
-	View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { BackHandler, FlatList, Image, Text, TextInput, TouchableOpacity, Vibration, View } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, editNote, openNote, note, deleteNote } from "../store";
+import { AppStoreState, editNote, openNote, attachFileToNote, file, deleteFileFromNote } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { Icon } from "@rneui/themed";
-import { Alert } from "react-native";
-
-import * as ImagePicker from "expo-image-picker";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+import quickWarnAlert from "../util/quickWarnAlert";
 
 type buttonProps = {
 	onclick: () => void;
@@ -42,26 +31,23 @@ const BottomBarButton = ({ onclick, name, style }: buttonProps) => {
 	);
 };
 
-type imageEditorProps = { index: number; full: boolean; data: { uri: string; ratio: number } };
-const ImageEditor = ({ index, full, data: { uri, ratio } }: imageEditorProps) => {
+type fileSampleProps = { note_id: number; index: number; full: boolean; data: file; name: string };
+const FileSample = ({ index, note_id, data: { uri, type, id }, name }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
+	let store = useStore();
 
+	console.log;
 	return (
 		<TouchableOpacity
 			key={index}
-			style={
-				full
-					? {
-							width: "100%",
-							aspectRatio: ratio,
-							borderRadius: 8,
-					  }
-					: {
-							flex: 1,
-							justifyContent: "center",
-					  }
-			}
-			activeOpacity={0.9}
+			style={{
+				flex: 1,
+				height: 128,
+				marginRight: 8,
+				aspectRatio: 1,
+				justifyContent: "center",
+			}}
+			activeOpacity={0.5}
 			onLongPress={() => {
 				Vibration.vibrate(50);
 				setSelected(true);
@@ -75,20 +61,12 @@ const ImageEditor = ({ index, full, data: { uri, ratio } }: imageEditorProps) =>
 				>
 					<BottomBarButton
 						style={{ margin: 0, marginBottom: 4 }}
-						onclick={() => {
-							Alert.alert("Delete warning", "Delete the image?", [
-								{
-									text: "Cancel",
-									style: "cancel",
-								},
-								{
-									text: "OK",
-									onPress: () => {
-										console.log("delete");
-									},
-								},
-							]);
-						}}
+						onclick={() =>
+							quickWarnAlert(
+								() => store.dispatch(deleteFileFromNote({ file_id: id, note_id })),
+								"no ten tam, ten no, no???"
+							)
+						}
 						name={"trash"}
 					/>
 					<BottomBarButton
@@ -98,13 +76,39 @@ const ImageEditor = ({ index, full, data: { uri, ratio } }: imageEditorProps) =>
 					/>
 				</View>
 			) : (
-				<Image
-					source={{ uri }}
+				<View
 					style={{
-						resizeMode: "contain",
+						backgroundColor: "black",
 						flex: 1,
+						justifyContent: "center",
+						borderRadius: 8,
 					}}
-				/>
+				>
+					{type === "image" ? (
+						<Image source={{ uri }} style={{ width: "100%", height: "100%", borderRadius: 8 }} />
+					) : (
+						<Icon name={"file"} type={"font-awesome"} size={24} color={"white"} />
+					)}
+
+					{type === "image" ? undefined : (
+						<Text
+							style={[
+								{
+									elevation: 0.1,
+									position: "absolute",
+									bottom: 16,
+									fontSize: 12,
+									width: "100%",
+									textAlign: "center",
+									color: "white",
+								},
+							]}
+						>
+							{/* todo: cleaner maybe */}
+							{name.substring(0, 15) === name ? name : name.substring(0, 15) + "..."}
+						</Text>
+					)}
+				</View>
 			)}
 		</TouchableOpacity>
 	);
@@ -128,41 +132,12 @@ export default function EditNote(props: { selected_id: number; navigation: any }
 
 	const mainStyle = getAppTheme();
 	const todos = useSelector((state: AppStoreState) => state.notes);
-	const selected_note = todos.find((value) => value.id === props.selected_id);
+	const selected_note = todos.find((value) => value.id === props.selected_id)!;
 	const store = useStore();
 
 	let header = selected_note?.header;
 	let text = selected_note?.text;
-
-	let [rid, setrid] = useState(0);
-	let [images, set_images] = useState<{ uri: string; ratio: number }[]>([]);
-	console.log(images);
-	console.log(images[0]?.ratio);
-
-	const image = () => {
-		if (images.length === 0) return;
-		else if (images.length === 1) return <ImageEditor full={true} index={0} data={images[0]} />;
-		else
-			return (
-				<View style={{ backgroundColor: "green", width: "100%", height: 350 }}>
-					<Tab.Navigator
-						showPageIndicator={true}
-						screenOptions={({ route }) => ({
-							tabBarShowIcon: false,
-							tabBarShowLabel: false,
-							tabBarStyle: [{ height: 0 }],
-						})}
-					>
-						{images.map((value, index) => (
-							<Tab.Screen
-								name={index.toString()}
-								component={() => <ImageEditor full={false} index={index} data={value} />}
-							/>
-						))}
-					</Tab.Navigator>
-				</View>
-			);
-	};
+	let files = selected_note.files;
 
 	return (
 		<View style={[styles.pageContainer, mainStyle]}>
@@ -184,7 +159,25 @@ export default function EditNote(props: { selected_id: number; navigation: any }
 						onChangeText={(new_text) => (text = new_text)}
 						defaultValue={text}
 					/>
-					{image()}
+					<Text style={[mainStyle, { marginBottom: 8 }]}>{files.length} files attached</Text>
+					{files.length > 0 ? (
+						<FlatList
+							data={files}
+							horizontal={true}
+							style={{ height: 128, width: "100%" }}
+							renderItem={({ item, index }) => {
+								return (
+									<FileSample
+										note_id={selected_note.id}
+										full={false}
+										index={index}
+										data={item}
+										name={item.name}
+									/>
+								);
+							}}
+						/>
+					) : undefined}
 				</View>
 			</View>
 			<View
@@ -204,35 +197,37 @@ export default function EditNote(props: { selected_id: number; navigation: any }
 					}}
 					name={"copy"}
 				/>
+
 				<BottomBarButton
-					onclick={() => {
-						Alert.alert("Delete warning", "Delete this note?", [
-							{
-								text: "Cancel",
-								style: "cancel",
-							},
-							{
-								text: "OK",
-								onPress: () => {
-									store.dispatch(deleteNote(props.selected_id));
-									props.navigation.navigate("Main");
+					onclick={async () => {
+						console.log("File pressed");
+						let result = await DocumentPicker.getDocumentAsync();
+						if (result.type === "cancel") return;
+						store.dispatch(
+							attachFileToNote({
+								id: selected_note.id,
+								file: {
+									uri: result.uri,
+									name: result.name,
+									type: result.mimeType?.includes("image") ? "image" : "unknown",
 								},
-							},
-						]);
+							})
+						);
 					}}
-					name={"trash"}
+					name={"file"}
 				/>
+
 				<BottomBarButton
 					onclick={async () => {
 						console.log("Image pressed");
-						let result = await ImagePicker.launchImageLibraryAsync({
-							allowsEditing: true,
-						});
+						let result = await ImagePicker.launchImageLibraryAsync();
 						if (result.cancelled) return;
-						console.log("Set");
-						images.push({ uri: result.uri, ratio: result.width / result.height });
-						set_images(images);
-						setrid(rid + 1);
+						store.dispatch(
+							attachFileToNote({
+								id: selected_note.id,
+								file: { uri: result.uri, type: "image", name: result.fileName || "image" },
+							})
+						);
 					}}
 					name={"image"}
 				/>

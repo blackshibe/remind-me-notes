@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, useThemeMode } from "@rneui/themed";
 import * as NavigationBar from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { View } from "./style/customComponents";
 
 export type NavigationPlaceholder = {
 	navigate: (arg0: string) => void;
@@ -43,7 +43,7 @@ export default function Route(props: props) {
 	NavigationBar.setBorderColorAsync(mainStyle.backgroundColor);
 
 	return (
-		<View style={[mainStyle, { flex: 1 }]}>
+		<View style={{ flex: 1 }}>
 			<StatusBar style={mode === "dark" ? "light" : "dark"} />
 			<Tab.Navigator
 				screenOptions={({ route }) => {

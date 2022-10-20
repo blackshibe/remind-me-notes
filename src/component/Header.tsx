@@ -1,7 +1,8 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View } from "../style/customComponents";
 import getAppTheme from "../style/styles";
 
 // TODO: import BottomTabHeaderProps
@@ -10,8 +11,8 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 	const mainStyle = getAppTheme();
 
 	return (
-		<View style={[styles.tabHeader, mainStyle, { marginTop: top }]}>
-			<Text style={[styles.tabHeaderText, mainStyle]}>{props.route.name}</Text>
+		<View style={[styles.tabHeader, { marginTop: top }]}>
+			<Text style={[styles.tabHeaderText]}>{props.route.name}</Text>
 		</View>
 	);
 };

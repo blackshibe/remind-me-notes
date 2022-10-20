@@ -5,13 +5,13 @@ import { styles } from "./src/style/styles";
 import Route from "./src/Route";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
 import { AppStore, createStore, setPushToken } from "./src/store";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import usePromise from "./src/util/usePromise";
 import EditNoteRouter from "./src/route/EditNoteRouter";
 import { ThemeProvider, useThemeMode } from "@rneui/themed";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const Stack = createStackNavigator();
 

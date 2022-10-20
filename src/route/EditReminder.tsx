@@ -1,12 +1,13 @@
 import React, { createRef, useEffect } from "react";
 
-import { BackHandler, Text, TextInput, TextInputBase, TouchableOpacity, View } from "react-native";
+import { BackHandler, Text, TextInput, TextInputBase, TouchableOpacity } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, editNote, openNote, note, editReminder } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/Header";
 import { Icon } from "@rneui/themed";
+import { View } from "../style/customComponents";
 
 // TODO: merge with EditNote or some shit
 export default function EditReminder(props: { selected_id: number; navigation: any }) {
@@ -31,7 +32,7 @@ export default function EditReminder(props: { selected_id: number; navigation: a
 	}, []);
 
 	return (
-		<View style={[styles.pageContainer, mainStyle]}>
+		<View style={[styles.pageContainer]}>
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 16, padding: 8 }]}>
 					<TextInput
