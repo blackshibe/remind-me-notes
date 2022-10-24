@@ -12,7 +12,7 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 
 	return (
 		<View style={[styles.tabHeader, { marginTop: top }]}>
-			<Text style={[styles.tabHeaderText]}>{props.route.name}</Text>
+			<Text style={[styles.tabHeaderText, mainStyle]}>{props.route.name}</Text>
 		</View>
 	);
 };

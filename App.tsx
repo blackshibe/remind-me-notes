@@ -12,6 +12,8 @@ import usePromise from "./src/util/usePromise";
 import EditNoteRouter from "./src/route/EditNoteRouter";
 import { ThemeProvider, useThemeMode } from "@rneui/themed";
 import { createStackNavigator } from "@react-navigation/stack";
+import PickReminderDate from "./src/route/PickReminderDate";
+import { getConvenientTime } from "./src/util/getConvenientTime";
 
 const Stack = createStackNavigator();
 
@@ -78,6 +80,7 @@ export default () => {
 					>
 						<Stack.Screen name="Main" component={Route} />
 						<Stack.Screen name="Note" component={EditNoteRouter} />
+						<Stack.Screen name="PickReminderDate" component={PickReminderDate} />
 					</Stack.Navigator>
 				</NavigationContainer>
 			</Provider>

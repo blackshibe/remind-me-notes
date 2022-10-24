@@ -19,6 +19,9 @@ export type file = {
 };
 
 export type reminder = {
+	// useless
+	header: string;
+
 	due_time: number;
 	text: string;
 	id: number;
@@ -33,6 +36,8 @@ type noteEdit = {
 };
 
 type selectedNote = { type: "note" | "reminder"; id: number };
+type selectedDate = { type: "date"; id: number };
+
 export type AppStoreState = {
 	notes: note[];
 	reminders: reminder[];
@@ -41,8 +46,10 @@ export type AppStoreState = {
 	next_reminder_id: number;
 	next_file_id: number;
 
+	theme?: "light" | "dark";
 	push_token?: string;
 	selected_note?: selectedNote;
+	selected_date?: selectedDate;
 };
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
@@ -91,6 +98,7 @@ let todosSlice = createSlice({
 		},
 		addReminder(state: AppStoreState, action: wrap<{ text: string }>) {
 			state.reminders.push({
+				header: "Reminder",
 				due_time: new Date().getTime() + 60 * 60 * 1000,
 				text: action.payload.text,
 				id: state.next_reminder_id,
@@ -107,6 +115,13 @@ let todosSlice = createSlice({
 		selectReminder(state: AppStoreState, action: wrap<number>) {
 			let reminder = state.reminders.find((value) => value.id === action.payload);
 			if (reminder) reminder.selected = !reminder.selected;
+		},
+		pickReminderDate(state: AppStoreState, action: wrap<selectedDate | undefined>) {
+			state.selected_date = action.payload;
+		},
+		setReminderDate(state: AppStoreState, action: wrap<[selectedDate, number]>) {
+			let reminder = state.reminders.find((value) => value.id === action.payload[0].id);
+			if (reminder) reminder.due_time = action.payload[1];
 		},
 
 		deleteNote(state: AppStoreState, action: wrap<number>) {
@@ -136,6 +151,10 @@ let todosSlice = createSlice({
 		setPushToken(state: AppStoreState, action: wrap<string>) {
 			state.push_token = action.payload;
 		},
+
+		setTheme(state: AppStoreState, action: wrap<"light" | "dark">) {
+			state.theme = action.payload;
+		},
 	},
 });
 
@@ -150,7 +169,10 @@ export const {
 	editReminder,
 	deleteReminder,
 	selectReminder,
+	setReminderDate,
+	setTheme,
 	deleteFileFromNote,
+	pickReminderDate,
 	attachFileToNote,
 } = todosSlice.actions;
 export async function createStore() {

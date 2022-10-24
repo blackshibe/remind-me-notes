@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { AppStoreState } from "../store";
 import EditNote from "./EditNote";
-import EditReminder from "./EditReminder";
 
+// this file is mostly unnecessary now
 export default function EditNoteRouter(props: { navigation: any }) {
 	const selected_note = useSelector((state: AppStoreState) => state.selected_note);
 
@@ -12,11 +12,5 @@ export default function EditNoteRouter(props: { navigation: any }) {
 	}, [selected_note]);
 
 	if (!selected_note) return <></>;
-	else if (selected_note.type === "reminder") {
-		return <EditReminder navigation={props.navigation} selected_id={selected_note.id} />;
-	} else if (selected_note.type == "note") {
-		return <EditNote navigation={props.navigation} selected_id={selected_note.id} />;
-	}
-
-	throw "what the fuck";
+	return <EditNote navigation={props.navigation} type={selected_note.type} selected_id={selected_note.id} />;
 }

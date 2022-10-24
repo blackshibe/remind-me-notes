@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { AppStoreState } from "./store";
+import { AppStore, AppStoreState } from "./store";
 import getAppTheme, { styles } from "./style/styles";
-import Settings from "./route/Reminders";
+import Reminders from "./route/Reminders";
 import App from "./route/Notes";
 import Test from "./route/Test";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -11,6 +11,7 @@ import { Icon, useThemeMode } from "@rneui/themed";
 import * as NavigationBar from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import { View } from "./style/customComponents";
+import Settings from "./route/Settings";
 
 export type NavigationPlaceholder = {
 	navigate: (arg0: string) => void;
@@ -26,18 +27,24 @@ let icons: { [index: string]: string } = {
 	Notes: "sticky-note",
 	Reminders: "calendar",
 	Settings: "cog",
+	Test: "terminal",
 };
 
 export default function Route(props: props) {
 	const selected_note = useSelector((state: AppStoreState) => state.selected_note);
+	const selected_date = useSelector((state: AppStoreState) => state.selected_date);
+
 	const { bottom } = useSafeAreaInsets();
 	const { mode, setMode } = useThemeMode();
 	const mainStyle = getAppTheme();
+	const theme = useSelector((state: AppStoreState) => state.theme);
 
 	// the Stack navigator is loosely tied to AppStoreState
+	useEffect(() => setMode(theme || "light"), [theme]);
 	useEffect(() => {
 		if (selected_note) props.navigation.navigate("Note");
-	}, [selected_note]);
+		if (selected_date) props.navigation.navigate("PickReminderDate");
+	}, [selected_note, selected_date]);
 
 	NavigationBar.setBackgroundColorAsync(mainStyle.backgroundColor);
 	NavigationBar.setBorderColorAsync(mainStyle.backgroundColor);
@@ -75,8 +82,9 @@ export default function Route(props: props) {
 				tabBarPosition={"bottom"}
 			>
 				<Tab.Screen name="Notes" component={App} />
-				<Tab.Screen name="Reminders" component={Settings} />
-				<Tab.Screen name="Settings" component={Test} />
+				<Tab.Screen name="Reminders" component={Reminders} />
+				<Tab.Screen name="Settings" component={Settings} />
+				<Tab.Screen name="Test" component={Test} />
 			</Tab.Navigator>
 		</View>
 	);

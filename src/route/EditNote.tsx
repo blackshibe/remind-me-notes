@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { BackHandler, FlatList, Image, Text, TextInput, TouchableOpacity, Vibration, View } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, editNote, openNote, attachFileToNote, file, deleteFileFromNote } from "../store";
+import {
+	AppStoreState,
+	editNote,
+	openNote,
+	attachFileToNote,
+	file,
+	deleteFileFromNote,
+	pickReminderDate,
+	editReminder,
+} from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { Icon } from "@rneui/themed";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import quickWarnAlert from "../util/quickWarnAlert";
+import useBackButton from "../util/useBackButton";
+import { getAccurateConvenientTime, getConvenientDate } from "../util/getConvenientTime";
 
 type buttonProps = {
 	onclick: () => void;
@@ -114,42 +125,64 @@ const FileSample = ({ index, note_id, data: { uri, type, id }, name }: fileSampl
 	);
 };
 
-const Tab = createMaterialTopTabNavigator();
-
-export default function EditNote(props: { selected_id: number; navigation: any }) {
-	useEffect(() => {
-		let l = BackHandler.addEventListener("hardwareBackPress", () => {
-			store.dispatch(editNote({ id: props.selected_id, header, text }));
-			store.dispatch(openNote());
-
-			props.navigation.navigate("Main");
-
-			return true;
-		});
-
-		return () => l.remove();
-	}, []);
-
+const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export default function EditNote(props: { selected_id: number; type: "note" | "reminder"; navigation: any }) {
 	const mainStyle = getAppTheme();
 	const todos = useSelector((state: AppStoreState) => state.notes);
-	const selected_note = todos.find((value) => value.id === props.selected_id)!;
+	const reminders = useSelector((state: AppStoreState) => state.reminders);
+
+	const selected_note =
+		props.type === "note"
+			? todos.find((value) => value.id === props.selected_id)!
+			: reminders.find((value) => value.id === props.selected_id)!;
+
 	const store = useStore();
 
 	let header = selected_note?.header;
 	let text = selected_note?.text;
 	let files = selected_note.files;
 
+	// @ts-ignore
+	// Typescript gets confused with overloading
+	let dueDate = new Date(selected_note?.due_time);
+
+	useBackButton(props, () => {
+		if (props.type === "note") {
+			store.dispatch(editNote({ id: props.selected_id, header, text }));
+			store.dispatch(openNote());
+		} else {
+			store.dispatch(editReminder({ id: props.selected_id, text }));
+			store.dispatch(openNote());
+		}
+	});
+
 	return (
 		<View style={[styles.pageContainer, mainStyle]}>
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 4, padding: 8, flex: 1 }]}>
-					<TextInput
-						style={[mainStyle, styles.header]}
-						placeholder={"Header"}
-						placeholderTextColor={"grey"}
-						onChangeText={(new_header) => (header = new_header)}
-						defaultValue={header}
-					/>
+					{props.type === "note" ? (
+						<TextInput
+							style={[mainStyle, styles.header]}
+							placeholder={"Header"}
+							placeholderTextColor={"grey"}
+							onChangeText={(new_header) => (header = new_header)}
+							defaultValue={header}
+						/>
+					) : (
+						<TouchableOpacity
+							style={[mainStyle, styles.header]}
+							onPress={() => {
+								store.dispatch(pickReminderDate({ type: "date", id: props.selected_id }));
+							}}
+						>
+							<Text style={[mainStyle, styles.header]}>Due {getConvenientDate(dueDate)}</Text>
+							<Text style={[mainStyle, { color: "grey" }]}>
+								due by {dueDate.toLocaleDateString()} @ {getAccurateConvenientTime(dueDate)},{" "}
+								{weekday[dueDate.getDay()]}
+							</Text>
+						</TouchableOpacity>
+					)}
+
 					<TextInput
 						style={[mainStyle, { width: "100%", flex: 100 }]}
 						multiline={true}
@@ -214,7 +247,7 @@ export default function EditNote(props: { selected_id: number; navigation: any }
 							})
 						);
 					}}
-					name={"file"}
+					name={"folder"}
 				/>
 
 				<BottomBarButton

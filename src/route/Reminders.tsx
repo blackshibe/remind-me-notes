@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { ScrollView, Text, TouchableOpacity, Vibration, View } from "react-native";
 import { useSelector, useStore } from "react-redux";
@@ -6,6 +6,7 @@ import { AppStoreState, addNote, reminder, AppStore, selectNote, selectReminder,
 import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
+import { getConvenientDate, getConvenientTime } from "../util/getConvenientTime";
 
 const selected = {
 	borderWidth: 1,
@@ -19,6 +20,8 @@ const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any 
 
 	let is_selecting = store.getState().reminders.find((value) => value.selected);
 	let selection_style = props.item.selected ? selected : undefined;
+
+	const dueDate = new Date(props.item.due_time);
 
 	return (
 		<TouchableOpacity
@@ -35,8 +38,9 @@ const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any 
 				store.dispatch(selectReminder(props.item.id));
 			}}
 		>
-			<Text style={[mainStyle, styles.headerSmall]}>due tomorrow</Text>
-			<Text style={{ color: "grey", marginBottom: 10 }}>14th Oct, Tuesday</Text>
+			<Text style={[mainStyle, styles.headerSmall]}>
+				due {getConvenientDate(dueDate)} @ {getConvenientTime(dueDate)}
+			</Text>
 			{props.item.text ? <Text style={mainStyle}>{props.item.text}</Text> : undefined}
 		</TouchableOpacity>
 	);
