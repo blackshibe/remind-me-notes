@@ -156,26 +156,26 @@ export default function EditNote(props: { selected_id: number; type: "note" | "r
 	// Typescript gets confused with overloading
 	let dueDate = new Date(selectedNote?.due_time);
 
-	// useBackButton(
-	// 	props,
-	// 	() => {
-	// 		if (selectedImage) {
-	// 			store.dispatch(openImage());
-	// 			return;
-	// 		}
+	useBackButton(
+		props,
+		() => {
+			if (selectedImage) {
+				store.dispatch(openImage());
+				return;
+			}
 
-	// 		if (props.type === "note") {
-	// 			store.dispatch(editNote({ id: props.selected_id, header, text }));
-	// 			store.dispatch(openNote());
-	// 		} else {
-	// 			updateNotification(store, selectedNote as reminder);
+			if (props.type === "note") {
+				store.dispatch(editNote({ id: props.selected_id, header, text }));
+				store.dispatch(openNote());
+			} else {
+				updateNotification(store, selectedNote as reminder);
 
-	// 			store.dispatch(editReminder({ id: props.selected_id, text }));
-	// 			store.dispatch(openNote());
-	// 		}
-	// 	},
-	// 	[selectedImage]
-	// );
+				store.dispatch(editReminder({ id: props.selected_id, text }));
+				store.dispatch(openNote());
+			}
+		},
+		[selectedImage]
+	);
 
 	if (selectedImage)
 		return (

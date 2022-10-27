@@ -33,13 +33,13 @@ let icons: { [index: string]: string } = {
 export default function Route(props: props) {
 	const selectedNote = useSelector((state: AppStoreState) => state.selected_note);
 	const selectedDate = useSelector((state: AppStoreState) => state.selected_date);
+	const selectedImage = useSelector((state: AppStoreState) => state.selected_image);
 
 	const { bottom } = useSafeAreaInsets();
 	const { mode, setMode } = useThemeMode();
 	const mainStyle = getAppTheme();
 	const theme = useSelector((state: AppStoreState) => state.theme);
 
-	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
 		setMode(theme || "light");
 	}, [theme]);
@@ -49,10 +49,11 @@ export default function Route(props: props) {
 		NavigationBar.setBorderColorAsync(mainStyle.backgroundColor);
 	}, [mainStyle]);
 
+	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
 		if (selectedNote) props.navigation.navigate("Note");
 		if (selectedDate) props.navigation.navigate("PickReminderDate");
-	}, [selectedNote, selectedDate]);
+	}, [selectedNote, selectedDate, selectedImage]);
 
 	return (
 		<View style={{ flex: 1 }}>
