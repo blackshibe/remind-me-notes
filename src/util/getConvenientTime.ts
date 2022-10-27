@@ -6,17 +6,23 @@ const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 
 //
 const snapMinutes = (mins: number) => {
-	let gridded = mins / 15;
-	gridded = Math.round(gridded);
+	let gridAlignedMins = mins / 15;
+	gridAlignedMins = Math.round(gridAlignedMins);
 
-	return gridded == 0 ? "00" : gridded * 15;
+	return gridAlignedMins == 0 ? "00" : gridAlignedMins * 15;
+};
+
+export const datePassed = (date: Date) => {
+	return new Date().getTime() > date.getTime();
 };
 
 export const getConvenientDate = (date: Date) => {
 	let timeDifferenceSeconds = (date.getTime() - new Date().getTime()) / 1000;
 
-	if (timeDifferenceSeconds < 60) {
+	if (timeDifferenceSeconds < 30) {
 		return `now`;
+	} else if (timeDifferenceSeconds < 60) {
+		return `in under a minute`;
 	} else if (timeDifferenceSeconds < HOUR_IN_SECONDS) {
 		return `in ${Math.round(timeDifferenceSeconds / 60)} mins`;
 	} else if (timeDifferenceSeconds < DAY_IN_SECONDS) {
@@ -32,9 +38,13 @@ export const getConvenientTime = (date: Date) => {
 	let hours = date.getHours();
 	let mins = snapMinutes(date.getMinutes());
 
+	if (mins == 60) {
+		hours += 1;
+		mins = 0;
+	}
 	if (hours == 0 && mins == 0) return "midnight";
 
-	return `${hours}:${mins < 10 ? `0${mins}` : mins}`;
+	return `${hours}:${mins < 10 ? `${mins}` : mins}`;
 };
 
 export const getAccurateConvenientTime = (date: Date) => {

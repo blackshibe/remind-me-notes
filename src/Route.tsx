@@ -31,8 +31,8 @@ let icons: { [index: string]: string } = {
 };
 
 export default function Route(props: props) {
-	const selected_note = useSelector((state: AppStoreState) => state.selected_note);
-	const selected_date = useSelector((state: AppStoreState) => state.selected_date);
+	const selectedNote = useSelector((state: AppStoreState) => state.selected_note);
+	const selectedDate = useSelector((state: AppStoreState) => state.selected_date);
 
 	const { bottom } = useSafeAreaInsets();
 	const { mode, setMode } = useThemeMode();
@@ -40,14 +40,19 @@ export default function Route(props: props) {
 	const theme = useSelector((state: AppStoreState) => state.theme);
 
 	// the Stack navigator is loosely tied to AppStoreState
-	useEffect(() => setMode(theme || "light"), [theme]);
 	useEffect(() => {
-		if (selected_note) props.navigation.navigate("Note");
-		if (selected_date) props.navigation.navigate("PickReminderDate");
-	}, [selected_note, selected_date]);
+		setMode(theme || "light");
+	}, [theme]);
 
-	NavigationBar.setBackgroundColorAsync(mainStyle.backgroundColor);
-	NavigationBar.setBorderColorAsync(mainStyle.backgroundColor);
+	useEffect(() => {
+		NavigationBar.setBackgroundColorAsync(mainStyle.backgroundColor);
+		NavigationBar.setBorderColorAsync(mainStyle.backgroundColor);
+	}, [mainStyle]);
+
+	useEffect(() => {
+		if (selectedNote) props.navigation.navigate("Note");
+		if (selectedDate) props.navigation.navigate("PickReminderDate");
+	}, [selectedNote, selectedDate]);
 
 	return (
 		<View style={{ flex: 1 }}>

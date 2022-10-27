@@ -1,5 +1,6 @@
 import { AnyAction, configureStore, createSlice, EnhancedStore, Reducer, ThunkMiddleware } from "@reduxjs/toolkit";
 import * as FileSystem from "expo-file-system";
+import { AppState, AppStateStatus } from "react-native";
 
 type wrap<T> = { payload: T; type: string };
 
@@ -8,14 +9,14 @@ export type note = {
 	text: string;
 	id: number;
 	selected?: boolean;
-	files: file[];
+	files: image[];
 };
 
-export type file = {
-	type: "image" | "unknown";
+export type image = {
 	uri: string;
-	name: string;
 	id: number;
+	width: number;
+	height: number;
 };
 
 export type reminder = {
@@ -24,9 +25,10 @@ export type reminder = {
 
 	due_time: number;
 	text: string;
+	notification_id: string;
 	id: number;
 	selected?: boolean;
-	files: file[];
+	files: image[];
 };
 
 type noteEdit = {
@@ -37,6 +39,11 @@ type noteEdit = {
 
 type selectedNote = { type: "note" | "reminder"; id: number };
 type selectedDate = { type: "date"; id: number };
+
+export const enum timeFormat {
+	twelve = 0,
+	twentyfour = 1,
+}
 
 export type AppStoreState = {
 	notes: note[];
@@ -50,13 +57,22 @@ export type AppStoreState = {
 	push_token?: string;
 	selected_note?: selectedNote;
 	selected_date?: selectedDate;
+	selected_image?: image;
+	time_format: timeFormat;
 };
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v5.json`;
+const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v8.json`;
 
-let initialState: AppStoreState = { notes: [], reminders: [], next_note_id: 1, next_reminder_id: 1, next_file_id: 1 };
+let initialState: AppStoreState = {
+	notes: [],
+	reminders: [],
+	time_format: timeFormat.twentyfour,
+	next_note_id: 1,
+	next_reminder_id: 1,
+	next_file_id: 1,
+};
 let todosSlice = createSlice({
 	name: "todos",
 	initialState: () => initialState,
@@ -67,15 +83,15 @@ let todosSlice = createSlice({
 
 		attachFileToNote(
 			state: AppStoreState,
-			action: wrap<{ file: { type: "image" | "unknown"; uri: string; name: string }; id: number }>
+			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
 		) {
 			let note = state.notes.find((value) => value.id === action.payload.id);
 			if (note)
 				note.files.push({
 					id: state.next_file_id,
-					type: action.payload.file.type,
 					uri: action.payload.file.uri,
-					name: action.payload.file.name,
+					height: action.payload.file.height,
+					width: action.payload.file.width,
 				});
 
 			state.next_file_id += 1;
@@ -96,10 +112,11 @@ let todosSlice = createSlice({
 
 			state.next_note_id += 1;
 		},
-		addReminder(state: AppStoreState, action: wrap<{ text: string }>) {
+		addReminder(state: AppStoreState, action: wrap<{ text: string; notification_id: string; date: number }>) {
 			state.reminders.push({
 				header: "Reminder",
-				due_time: new Date().getTime() + 60 * 60 * 1000,
+				notification_id: action.payload.notification_id,
+				due_time: action.payload.date, // new Date().getTime() + 60 * 60 * 1000,
 				text: action.payload.text,
 				id: state.next_reminder_id,
 				files: [],
@@ -122,6 +139,11 @@ let todosSlice = createSlice({
 		setReminderDate(state: AppStoreState, action: wrap<[selectedDate, number]>) {
 			let reminder = state.reminders.find((value) => value.id === action.payload[0].id);
 			if (reminder) reminder.due_time = action.payload[1];
+		},
+		setReminderNotificationId(state: AppStoreState, action: wrap<[number, string]>) {
+			console.log(new Date().getTime());
+			let reminder = state.reminders.find((value) => value.id === action.payload[0]);
+			if (reminder) reminder.notification_id = action.payload[1];
 		},
 
 		deleteNote(state: AppStoreState, action: wrap<number>) {
@@ -155,6 +177,14 @@ let todosSlice = createSlice({
 		setTheme(state: AppStoreState, action: wrap<"light" | "dark">) {
 			state.theme = action.payload;
 		},
+
+		setTimeFormat(state: AppStoreState, action: wrap<timeFormat>) {
+			state.time_format = action.payload;
+		},
+
+		openImage(state: AppStoreState, action: wrap<image | undefined>) {
+			state.selected_image = action.payload;
+		},
 	},
 });
 
@@ -174,6 +204,9 @@ export const {
 	deleteFileFromNote,
 	pickReminderDate,
 	attachFileToNote,
+	setReminderNotificationId,
+	setTimeFormat,
+	openImage,
 } = todosSlice.actions;
 export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)
@@ -186,14 +219,23 @@ export async function createStore() {
 		reducer: todosSlice.reducer,
 	});
 
+	AppState.addEventListener("change", (appState: AppStateStatus) => {
+		console.log("app state set to", appState);
+
+		if (appState === "background") {
+			let storeState = store.getState();
+			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));
+		}
+	});
+
+	let nextForcedSaveTime = new Date().getTime() + 10000;
 	store.subscribe(() => {
-		new Promise(() => {
-			let store_state = store.getState();
-			store_state.selected_note = undefined;
-			// i'm lazy
-			console.log("todo: cooldown to saving redux state");
-			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(store_state));
-		});
+		// juust in case
+		if (new Date().getTime() > nextForcedSaveTime) {
+			nextForcedSaveTime = new Date().getTime() + 10000;
+			let storeState = store.getState();
+			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));
+		}
 	});
 
 	return store;

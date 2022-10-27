@@ -1,11 +1,12 @@
 import React from "react";
 
-import { ScrollView, Text, TouchableOpacity, Vibration, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, note, addNote, openNote, selectNote, AppStore } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/NotesHeader";
+import { View } from "../style/customComponents";
 
 const selected = {
 	borderWidth: 1,
@@ -21,18 +22,18 @@ const Item = (props: {
 	const store = props.extra.store;
 	const mainStyle = props.extra.mainStyle;
 
-	let is_selecting = store.getState().notes.find((value) => value.selected);
-	let selection_style = props.item.selected ? selected : undefined;
+	let isSelecting = store.getState().notes.find((value) => value.selected);
+	let selectionStyle = props.item.selected ? selected : undefined;
 
 	return (
 		<TouchableOpacity
 			style={[
 				styles.note,
 				{ backgroundColor: mainStyle.backgroundColor, borderColor: mainStyle.color },
-				selection_style,
+				selectionStyle,
 			]}
 			onPress={() => {
-				if (is_selecting) {
+				if (isSelecting) {
 					store.dispatch(selectNote(props.item.id));
 				} else {
 					store.dispatch(openNote({ type: "note", id: props.item.id }));
@@ -55,7 +56,7 @@ export default function Notes() {
 	const store = useStore<AppStoreState>();
 
 	return (
-		<View style={[styles.pageContainer, mainStyle]}>
+		<View style={styles.pageContainer}>
 			<Header route={{ name: "Notes" }} />
 			{todos.length === 0 ? (
 				<Text style={[mainStyle, { width: "100%", textAlign: "center" }]}>No notes added yet...</Text>

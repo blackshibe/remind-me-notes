@@ -7,22 +7,24 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { AppStore, createStore, setPushToken } from "./src/store";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
 import usePromise from "./src/util/usePromise";
 import EditNoteRouter from "./src/route/EditNoteRouter";
 import { ThemeProvider, useThemeMode } from "@rneui/themed";
 import { createStackNavigator } from "@react-navigation/stack";
 import PickReminderDate from "./src/route/PickReminderDate";
 import { getConvenientTime } from "./src/util/getConvenientTime";
+import { AppState, AppStateStatus, Platform } from "react-native";
 
 const Stack = createStackNavigator();
 
 Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldShowAlert: true,
-		shouldPlaySound: true,
-		shouldSetBadge: true,
-	}),
+	handleNotification: async (a) => {
+		return {
+			shouldShowAlert: true,
+			shouldPlaySound: true,
+			shouldSetBadge: true,
+		};
+	},
 });
 
 export default () => {
@@ -76,6 +78,7 @@ export default () => {
 						screenOptions={{
 							cardOverlayEnabled: false,
 							headerShown: false,
+							gestureEnabled: false,
 						}}
 					>
 						<Stack.Screen name="Main" component={Route} />

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 
-import { ScrollView, Text, TouchableOpacity, Vibration, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, addNote, reminder, AppStore, selectNote, selectReminder, openNote } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
-import { getConvenientDate, getConvenientTime } from "../util/getConvenientTime";
+import { datePassed, getAccurateConvenientTime, getConvenientDate, getConvenientTime } from "../util/getConvenientTime";
+import { View } from "../style/customComponents";
 
 const selected = {
 	borderWidth: 1,
@@ -18,16 +19,23 @@ const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any 
 	const store = props.extra.store;
 	const mainStyle = props.extra.mainStyle;
 
-	let is_selecting = store.getState().reminders.find((value) => value.selected);
-	let selection_style = props.item.selected ? selected : undefined;
+	let isSelecting = store.getState().reminders.find((value) => value.selected);
+	let selectionStyle = props.item.selected ? selected : undefined;
 
 	const dueDate = new Date(props.item.due_time);
 
+	let convenientDate = getConvenientDate(dueDate);
+	let dueString = datePassed(dueDate)
+		? "past due"
+		: `due ${convenientDate} @ ${
+				convenientDate == "now" ? getAccurateConvenientTime(dueDate) : getConvenientTime(dueDate)
+		  }`;
+
 	return (
 		<TouchableOpacity
-			style={[styles.note, { borderColor: mainStyle.color }, selection_style]}
+			style={[styles.note, { borderColor: mainStyle.color }, selectionStyle]}
 			onPress={() => {
-				if (is_selecting) {
+				if (isSelecting) {
 					store.dispatch(selectReminder(props.item.id));
 				} else {
 					store.dispatch(openNote({ type: "reminder", id: props.item.id }));
@@ -38,9 +46,7 @@ const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any 
 				store.dispatch(selectReminder(props.item.id));
 			}}
 		>
-			<Text style={[mainStyle, styles.headerSmall]}>
-				due {getConvenientDate(dueDate)} @ {getConvenientTime(dueDate)}
-			</Text>
+			<Text style={[mainStyle, styles.headerSmall]}>{dueString}</Text>
 			{props.item.text ? <Text style={mainStyle}>{props.item.text}</Text> : undefined}
 		</TouchableOpacity>
 	);
@@ -48,12 +54,11 @@ const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any 
 
 export default function Reminders() {
 	const mainStyle = getAppTheme();
-
 	const reminders = useSelector((state: AppStoreState) => state.reminders);
 	const store = useStore<AppStoreState>();
 
 	return (
-		<View style={[styles.pageContainer, mainStyle]}>
+		<View style={styles.pageContainer}>
 			<RemindersHeader route={{ name: "Reminders" }} />
 			{reminders.length === 0 ? (
 				<Text style={[mainStyle, { width: "100%", textAlign: "center" }]}>No reminders added yet...</Text>

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import getAppTheme from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { View } from "../style/customComponents";
+import * as Notifications from "expo-notifications";
 
 export const RemindersHeader = (props: { route: { name?: string } }): JSX.Element => {
 	const store = useStore();
@@ -24,8 +25,18 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 			});
 		}, "Delete the selected reminders?");
 
-	const addNote = () => {
-		store.dispatch(addReminder({ text: "text" }));
+	const addNote = async () => {
+		let date = new Date().getTime() + 15 * 1000;
+		let notification_id = await Notifications.scheduleNotificationAsync({
+			content: {
+				title: "Reminder is due",
+				body: "No content",
+				data: {},
+			},
+			trigger: { channelId: "default", date },
+		});
+
+		store.dispatch(addReminder({ text: "", notification_id, date }));
 	};
 
 	return (

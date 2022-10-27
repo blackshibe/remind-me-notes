@@ -10,11 +10,24 @@ Phone app something something
 -   Light/Dark theme [x]
 -   make IDs when adding new notes never repeat [x]
 -   General note/reminder logic(?) [x]
+-   time format setting [x]
+-   Prettier time formatting [x]
 
--   Dragging notes around in MasonryList
+Organization
+
+-   Organize app styles
 -   Themable components [TouchableOpacity, Text]
--   Higher ActiveOpacity for all TouchableOpacities
--   Switch to camelCase
--   Prettier time formatting
--   24hr/12hr time format
 -   Split every loose component into each separate file
+-   Switch to camelCase
+-   Remove @ts-ignores
+
+Details
+
+-   Update reminder convenient dates periodically
+-   Higher ActiveOpacity for all TouchableOpacities
+
+Features
+
+-   moving notes in MasonryList
+-   24hr/12hr time format logic
+-   handle deleting notifications when reminders are deleted

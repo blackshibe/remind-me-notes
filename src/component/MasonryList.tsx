@@ -18,7 +18,7 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 		children.push(
 			<Pressable
 				onLongPress={(event) => {
-					// console.log("Start");
+					console.log("Start");
 				}}
 				onPressOut={(event) => {
 					// console.log("End");
