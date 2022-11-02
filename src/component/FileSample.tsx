@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { Vibration } from "react-native";
 import { useStore } from "react-redux";
-import { image, deleteFileFromNote, openImage } from "../store";
+import { image, deleteFileFromNote, openImage, deleteFileFromReminder } from "../store";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { BottomBarButton } from "./BottomBarButton";
-import { Icon } from "@rneui/themed";
-import { FlatList, Image, TextInput } from "react-native";
-import { TouchableOpacity, View, Text } from "../style/customComponents";
+import { Image } from "react-native";
+import { TouchableOpacity, View } from "../style/customComponents";
 
-type fileSampleProps = { note_id: number; index: number; full: boolean; data: image };
-export const FileSample = ({ index, note_id, data }: fileSampleProps) => {
+type fileSampleProps = { note_id: number; index: number; type: string; full: boolean; data: image };
+export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
 	let store = useStore();
 
@@ -39,10 +38,13 @@ export const FileSample = ({ index, note_id, data }: fileSampleProps) => {
 					<BottomBarButton
 						style={{ margin: 0, marginBottom: 4 }}
 						onclick={() =>
-							quickWarnAlert(
-								() => store.dispatch(deleteFileFromNote({ file_id: data.id, note_id })),
-								"Do you want to delete this file?"
-							)
+							quickWarnAlert(() => {
+								if (type === "note") {
+									store.dispatch(deleteFileFromNote({ file_id: data.id, note_id }));
+								} else {
+									store.dispatch(deleteFileFromReminder({ file_id: data.id, note_id }));
+								}
+							}, "Do you want to delete this file?")
 						}
 						name={"trash"}
 					/>

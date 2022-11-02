@@ -1,7 +1,5 @@
-import { createTheme, useThemeMode } from "@rneui/themed";
+import { useThemeMode } from "@rneui/themed";
 import { StyleSheet } from "react-native";
-
-// todo: theming
 
 export default function getAppTheme() {
 	const { mode, setMode } = useThemeMode();

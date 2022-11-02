@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
-
-import { Button, ScrollView, StyleSheet, Switch, Text } from "react-native";
+import React from "react";
+import { Switch } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStore, AppStoreState, setTheme, setTimeFormat, timeFormat } from "../store";
+import { AppStoreState, setTheme, setTimeFormat, timeFormat } from "../store";
 import getAppTheme, { styles } from "../style/styles";
-import usePromise from "../util/usePromise";
 import { Header } from "../component/Header";
 import { useThemeMode } from "@rneui/themed";
-
-import * as ImagePicker from "expo-image-picker";
-import * as Notifications from "expo-notifications";
-import { View } from "../style/customComponents";
+import { View, Text } from "../style/customComponents";
 
 export default function Settings() {
 	const mainStyle = getAppTheme();

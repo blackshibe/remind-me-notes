@@ -12,8 +12,7 @@ import EditNoteRouter from "./src/route/EditNoteRouter";
 import { ThemeProvider, useThemeMode } from "@rneui/themed";
 import { createStackNavigator } from "@react-navigation/stack";
 import PickReminderDate from "./src/route/PickReminderDate";
-import { getConvenientTime } from "./src/util/getConvenientTime";
-import { AppState, AppStateStatus, Platform } from "react-native";
+import { Platform } from "react-native";
 
 const Stack = createStackNavigator();
 
@@ -78,7 +77,6 @@ export default () => {
 						screenOptions={{
 							cardOverlayEnabled: false,
 							headerShown: false,
-							gestureEnabled: false,
 						}}
 					>
 						<Stack.Screen name="Main" component={Route} />

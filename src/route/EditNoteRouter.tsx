@@ -12,5 +12,6 @@ export default function EditNoteRouter(props: { navigation: any }) {
 	}, [selectedNote]);
 
 	if (!selectedNote) return <></>;
+
 	return <EditNote navigation={props.navigation} type={selectedNote.type} selected_id={selectedNote.id} />;
 }

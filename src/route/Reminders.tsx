@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-
-import { ScrollView, Text, TouchableOpacity, Vibration } from "react-native";
+import { ScrollView, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, addNote, reminder, AppStore, selectNote, selectReminder, openNote } from "../store";
-import getAppTheme, { styles } from "../style/styles";
+import { AppStoreState, reminder, AppStore, selectReminder, openNote, timeFormat, note } from "../store";
 import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
-import { datePassed, getAccurateConvenientTime, getConvenientDate, getConvenientTime } from "../util/getConvenientTime";
-import { View } from "../style/customComponents";
+import { datePassed, getConvenientDate, getConvenientTime, shouldDisplayTime } from "../util/getConvenientTime";
+import { View, Text, TouchableOpacity } from "../style/customComponents";
+import getAppTheme, { styles } from "../style/styles";
+import { Icon } from "@rneui/themed";
 
 const selected = {
 	borderWidth: 1,
@@ -15,39 +15,52 @@ const selected = {
 	color: "rgb(100,200,255)",
 };
 
-const Item = (props: { item: reminder; extra: { store: AppStore; mainStyle: any } }) => {
-	const store = props.extra.store;
-	const mainStyle = props.extra.mainStyle;
+const pastDue = {
+	borderColor: "rgb(125,125,125)",
+	color: "rgb(125,125,125)",
+};
+
+type extraItemProps = { store: AppStore; timeFormat: timeFormat; mainStyle: any };
+const Item = ({ key, element, extra }: { key: number; element: reminder; extra: extraItemProps }) => {
+	const store = extra.store;
+	const mainStyle = extra.mainStyle;
 
 	let isSelecting = store.getState().reminders.find((value) => value.selected);
-	let selectionStyle = props.item.selected ? selected : undefined;
+	let selectionStyle = element.selected ? selected : undefined;
 
-	const dueDate = new Date(props.item.due_time);
-
+	let dueDate = new Date(element.due_time);
+	let greyOutStyle = datePassed(dueDate) ? pastDue : undefined;
 	let convenientDate = getConvenientDate(dueDate);
 	let dueString = datePassed(dueDate)
 		? "past due"
-		: `due ${convenientDate} @ ${
-				convenientDate == "now" ? getAccurateConvenientTime(dueDate) : getConvenientTime(dueDate)
-		  }`;
+		: shouldDisplayTime(dueDate)
+		? `due ${convenientDate} @ ${getConvenientTime(extra.timeFormat, dueDate)}`
+		: `due ${convenientDate}`;
 
 	return (
 		<TouchableOpacity
-			style={[styles.note, { borderColor: mainStyle.color }, selectionStyle]}
+			key={key}
+			style={[styles.note, { borderColor: mainStyle.color }, greyOutStyle, selectionStyle]}
 			onPress={() => {
 				if (isSelecting) {
-					store.dispatch(selectReminder(props.item.id));
+					store.dispatch(selectReminder(element.id));
 				} else {
-					store.dispatch(openNote({ type: "reminder", id: props.item.id }));
+					store.dispatch(openNote({ type: "reminder", id: element.id }));
 				}
 			}}
 			onLongPress={() => {
 				Vibration.vibrate(50);
-				store.dispatch(selectReminder(props.item.id));
+				store.dispatch(selectReminder(element.id));
 			}}
 		>
-			<Text style={[mainStyle, styles.headerSmall]}>{dueString}</Text>
-			{props.item.text ? <Text style={mainStyle}>{props.item.text}</Text> : undefined}
+			<Text style={[styles.headerSmall, greyOutStyle]}>{dueString}</Text>
+			{element.text ? <Text style={mainStyle}>{element.text}</Text> : undefined}
+			{element.files.length ? (
+				<View style={{ flex: 1, marginTop: 8, flexDirection: "row", alignItems: "center" }}>
+					<Icon name={"file"} type={"font-awesome"} size={12} style={{ marginRight: 8 }} color={"grey"} />
+					<Text style={{ color: "grey" }}>{element.files.length} files</Text>
+				</View>
+			) : undefined}
 		</TouchableOpacity>
 	);
 };
@@ -56,12 +69,17 @@ export default function Reminders() {
 	const mainStyle = getAppTheme();
 	const reminders = useSelector((state: AppStoreState) => state.reminders);
 	const store = useStore<AppStoreState>();
+	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
+
+	// time counter
+	let [_f, forceRerender] = useState(0);
+	setTimeout(() => forceRerender(_f + 1), 1000);
 
 	return (
 		<View style={styles.pageContainer}>
 			<RemindersHeader route={{ name: "Reminders" }} />
 			{reminders.length === 0 ? (
-				<Text style={[mainStyle, { width: "100%", textAlign: "center" }]}>No reminders added yet...</Text>
+				<Text style={{ width: "100%", textAlign: "center" }}>No reminders added yet...</Text>
 			) : (
 				<ScrollView
 					style={{
@@ -71,7 +89,12 @@ export default function Reminders() {
 						width: "100%",
 					}}
 				>
-					<MasonryList data={reminders} renderer={Item} columns={2} extra_props={{ store, mainStyle }} />
+					<MasonryList
+						data={reminders}
+						renderer={Item}
+						columns={2}
+						extra_props={{ store, timeFormat, mainStyle }}
+					/>
 				</ScrollView>
 			)}
 		</View>

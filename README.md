@@ -12,22 +12,16 @@ Phone app something something
 -   General note/reminder logic(?) [x]
 -   time format setting [x]
 -   Prettier time formatting [x]
+-   Switch to camelCase [x]
+-   Higher ActiveOpacity for all TouchableOpacities [x]
+-   Themable components [TouchableOpacity, Text] [x]
+-   handle deleting notifications when reminders are deleted [x]
+-   24hr/12hr time format logic [x]
+-   Amount of files attached in notes and reminders main view [x]
+-   Remove @ts-ignores [x]
+-   Split every loose component into each separate file [x]
 
-Organization
-
--   Organize app styles
--   Themable components [TouchableOpacity, Text]
--   Split every loose component into each separate file
--   Switch to camelCase
--   Remove @ts-ignores
-
-Details
-
--   Update reminder convenient dates periodically
--   Higher ActiveOpacity for all TouchableOpacities
-
-Features
-
--   moving notes in MasonryList
--   24hr/12hr time format logic
--   handle deleting notifications when reminders are deleted
+-   moving notes in MasonryList [for later]
+-   Splash screen for new app installs
+-   Logging into firebase
+-   Saving app data to firebase

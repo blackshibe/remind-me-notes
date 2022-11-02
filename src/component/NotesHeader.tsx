@@ -1,7 +1,6 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import getAppTheme from "../style/styles";
-import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { addNote, AppStoreState, deleteNote } from "../store";
 import { Icon } from "@rneui/themed";

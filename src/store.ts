@@ -97,8 +97,29 @@ let todosSlice = createSlice({
 			state.next_file_id += 1;
 		},
 
+		attachFileToReminder(
+			state: AppStoreState,
+			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
+		) {
+			let note = state.reminders.find((value) => value.id === action.payload.id);
+			if (note)
+				note.files.push({
+					id: state.next_file_id,
+					uri: action.payload.file.uri,
+					height: action.payload.file.height,
+					width: action.payload.file.width,
+				});
+
+			state.next_file_id += 1;
+		},
+
 		deleteFileFromNote(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
 			let note = state.notes.find((value) => value.id === action.payload.note_id);
+			if (note) note.files = note.files.filter((value) => action.payload.file_id != value.id);
+		},
+
+		deleteFileFromReminder(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
+			let note = state.reminders.find((value) => value.id === action.payload.note_id);
 			if (note) note.files = note.files.filter((value) => action.payload.file_id != value.id);
 		},
 
@@ -141,7 +162,6 @@ let todosSlice = createSlice({
 			if (reminder) reminder.due_time = action.payload[1];
 		},
 		setReminderNotificationId(state: AppStoreState, action: wrap<[number, string]>) {
-			console.log(new Date().getTime());
 			let reminder = state.reminders.find((value) => value.id === action.payload[0]);
 			if (reminder) reminder.notification_id = action.payload[1];
 		},
@@ -202,8 +222,10 @@ export const {
 	setReminderDate,
 	setTheme,
 	deleteFileFromNote,
+	deleteFileFromReminder,
 	pickReminderDate,
 	attachFileToNote,
+	attachFileToReminder,
 	setReminderNotificationId,
 	setTimeFormat,
 	openImage,
@@ -220,8 +242,6 @@ export async function createStore() {
 	});
 
 	AppState.addEventListener("change", (appState: AppStateStatus) => {
-		console.log("app state set to", appState);
-
 		if (appState === "background") {
 			let storeState = store.getState();
 			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));

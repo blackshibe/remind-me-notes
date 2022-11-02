@@ -18,15 +18,18 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 	let state = useSelector((state: AppStoreState) => state.reminders);
 	let isSelecting = state.find((value) => value.selected);
 
-	const deleteNotes = () =>
+	const deleteReminders = () =>
 		quickWarnAlert(() => {
 			state.forEach((element) => {
-				if (element.selected) store.dispatch(deleteReminder(element.id));
+				if (element.selected) {
+					store.dispatch(deleteReminder(element.id));
+					Notifications.cancelScheduledNotificationAsync(element.notification_id);
+				}
 			});
 		}, "Delete the selected reminders?");
 
 	const addNote = async () => {
-		let date = new Date().getTime() + 15 * 1000;
+		let date = new Date().getTime() + 60 * 60 * 1000;
 		let notification_id = await Notifications.scheduleNotificationAsync({
 			content: {
 				title: "Reminder is due",
@@ -46,7 +49,7 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 				<TouchableOpacity
 					hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
 					style={{ height: 32, width: 32, justifyContent: "center" }}
-					onPress={isSelecting ? deleteNotes : addNote}
+					onPress={isSelecting ? deleteReminders : addNote}
 				>
 					<Icon name={isSelecting ? "delete" : "add"} size={32} color={mainStyle.color} />
 				</TouchableOpacity>

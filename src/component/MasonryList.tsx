@@ -1,11 +1,12 @@
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable } from "react-native";
+import { View } from "../style/customComponents";
 
 type props<T, E> = {
 	data: T[];
-	renderer: (props: { item: T; extra: E }) => JSX.Element;
+	renderer: (props: { element: T; key: number; extra: E }) => JSX.Element;
 	columns: number;
-	extra_props?: E;
+	extra_props: E;
 };
 
 export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
@@ -15,20 +16,7 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 
 	props.data.forEach((element, index) => {
 		// todo: dragging behavior
-		children.push(
-			<Pressable
-				onLongPress={(event) => {
-					console.log("Start");
-				}}
-				onPressOut={(event) => {
-					// console.log("End");
-				}}
-				key={index}
-				style={{}}
-			>
-				{props.renderer({ item: element, extra: props.extra_props! })}
-			</Pressable>
-		);
+		children.push(<props.renderer element={element} key={index} extra={props.extra_props} />);
 	});
 
 	children.forEach((element) => {

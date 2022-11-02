@@ -1,5 +1,4 @@
-import { useStore } from "react-redux";
-import { AppStore, AppStoreState, reminder, setReminderNotificationId } from "../store";
+import { AppStore, reminder, setReminderNotificationId } from "../store";
 import * as Notifications from "expo-notifications";
 
 export const updateNotification = (store: AppStore, reminder: reminder) => {
@@ -19,7 +18,6 @@ export const updateNotification = (store: AppStore, reminder: reminder) => {
 			},
 			trigger: { channelId: "default", date: newReminder.due_time },
 		}).then((new_id) => {
-			console.log(new_id);
 			store.dispatch(setReminderNotificationId([reminder.id, new_id]));
 		});
 	});

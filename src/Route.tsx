@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { AppStore, AppStoreState } from "./store";
+import { AppStoreState } from "./store";
 import getAppTheme, { styles } from "./style/styles";
 import Reminders from "./route/Reminders";
 import App from "./route/Notes";
-import Test from "./route/Test";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, useThemeMode } from "@rneui/themed";
@@ -90,7 +89,6 @@ export default function Route(props: props) {
 				<Tab.Screen name="Notes" component={App} />
 				<Tab.Screen name="Reminders" component={Reminders} />
 				<Tab.Screen name="Settings" component={Settings} />
-				<Tab.Screen name="Test" component={Test} />
 			</Tab.Navigator>
 		</View>
 	);
