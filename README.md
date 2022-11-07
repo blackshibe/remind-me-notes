@@ -20,8 +20,13 @@ Phone app something something
 -   Amount of files attached in notes and reminders main view [x]
 -   Remove @ts-ignores [x]
 -   Split every loose component into each separate file [x]
+-   Logging into firebase [x]
+-   Splash screen for new app installs [x]
 
 -   moving notes in MasonryList [for later]
--   Splash screen for new app installs
--   Logging into firebase
+-   Animate switching between delete and add icons
+-   Save notes without leaving the edit screen
+
+-   Privatize the Firebase API keys
+-   Invalidate the Firebase API keys
 -   Saving app data to firebase

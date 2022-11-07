@@ -1,20 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Provider } from "react-redux";
 import { useFonts } from "expo-font";
-import { styles } from "./src/style/styles";
-import Route from "./src/Route";
-import { StatusBar } from "expo-status-bar";
-import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { AppStore, createStore, setPushToken } from "./src/store";
 import * as Notifications from "expo-notifications";
 import usePromise from "./src/util/usePromise";
-import EditNoteRouter from "./src/route/EditNoteRouter";
-import { ThemeProvider, useThemeMode } from "@rneui/themed";
+import { ThemeProvider } from "@rneui/themed";
 import { createStackNavigator } from "@react-navigation/stack";
-import PickReminderDate from "./src/route/PickReminderDate";
-import { Platform } from "react-native";
-
-const Stack = createStackNavigator();
+import { Platform, View } from "react-native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { LoginWrap } from "./src/LoginWrap";
 
 Notifications.setNotificationHandler({
 	handleNotification: async (a) => {
@@ -72,18 +66,7 @@ export default () => {
 	return (
 		<ThemeProvider>
 			<Provider store={store}>
-				<NavigationContainer theme={DarkTheme}>
-					<Stack.Navigator
-						screenOptions={{
-							cardOverlayEnabled: false,
-							headerShown: false,
-						}}
-					>
-						<Stack.Screen name="Main" component={Route} />
-						<Stack.Screen name="Note" component={EditNoteRouter} />
-						<Stack.Screen name="PickReminderDate" component={PickReminderDate} />
-					</Stack.Navigator>
-				</NavigationContainer>
+				<LoginWrap />
 			</Provider>
 		</ThemeProvider>
 	);

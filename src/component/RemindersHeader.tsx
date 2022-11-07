@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, Button, Text, TouchableOpacity } from "react-native";
+import { Alert, Button, Text } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { addReminder, addNote, AppStoreState, deleteNote, deleteReminder } from "../store";
@@ -9,6 +9,8 @@ import getAppTheme from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { View } from "../style/customComponents";
 import * as Notifications from "expo-notifications";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { TouchableOpacity } from "../style/customComponents";
 
 export const RemindersHeader = (props: { route: { name?: string } }): JSX.Element => {
 	const store = useStore();
@@ -45,7 +47,7 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 	return (
 		<View style={[styles.tabHeader, { marginTop: top }]}>
 			<Text style={[styles.tabHeaderText, mainStyle]}>{props.route.name}</Text>
-			<View style={{}}>
+			<Animated.View style={{}} entering={FadeIn} exiting={FadeOut}>
 				<TouchableOpacity
 					hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
 					style={{ height: 32, width: 32, justifyContent: "center" }}
@@ -53,7 +55,7 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 				>
 					<Icon name={isSelecting ? "delete" : "add"} size={32} color={mainStyle.color} />
 				</TouchableOpacity>
-			</View>
+			</Animated.View>
 		</View>
 	);
 };

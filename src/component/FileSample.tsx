@@ -6,6 +6,7 @@ import quickWarnAlert from "../util/quickWarnAlert";
 import { BottomBarButton } from "./BottomBarButton";
 import { Image } from "react-native";
 import { TouchableOpacity, View } from "../style/customComponents";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 type fileSampleProps = { note_id: number; index: number; type: string; full: boolean; data: image };
 export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
@@ -22,7 +23,6 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 				aspectRatio: 1,
 				justifyContent: "center",
 			}}
-			activeOpacity={0.5}
 			onLongPress={() => {
 				Vibration.vibrate(50);
 				setSelected(true);
@@ -55,7 +55,7 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 					/>
 				</View>
 			) : (
-				<View
+				<Animated.View
 					style={{
 						backgroundColor: "black",
 						flex: 1,
@@ -63,8 +63,12 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 						borderRadius: 8,
 					}}
 				>
-					<Image source={{ uri: data.uri }} style={{ width: "100%", height: "100%", borderRadius: 8 }} />
-				</View>
+					<Animated.Image
+						entering={FadeIn}
+						source={{ uri: data.uri }}
+						style={{ width: "100%", height: "100%", borderRadius: 8 }}
+					/>
+				</Animated.View>
 			)}
 		</TouchableOpacity>
 	);

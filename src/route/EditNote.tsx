@@ -23,6 +23,8 @@ import { Dimensions, FlatList, Modal, Image } from "react-native";
 import { TouchableOpacity, View, Text, TextInput } from "../style/customComponents";
 import ImageZoom from "react-native-image-pan-zoom";
 import { useNavigation } from "@react-navigation/native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { fadeOut } from "react-navigation-transitions";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -83,32 +85,31 @@ export default function EditNote(props: editNoteProps) {
 		[selectedImage]
 	);
 
-	if (selectedImage) {
-		return (
-			<ImageZoom
-				// @ts-ignore typescript is wrong here again
-				style={[mainStyle, { width: "100%", height: "100%" }]}
-				cropWidth={Dimensions.get("window").width}
-				cropHeight={Dimensions.get("window").height}
-				imageWidth={Dimensions.get("window").width}
-				imageHeight={Dimensions.get("window").height}
-			>
-				<Image
-					style={{
-						width: Dimensions.get("window").width,
-						height: Dimensions.get("window").height,
-						resizeMode: "contain",
-					}}
-					source={{
-						uri: selectedImage.uri,
-					}}
-				/>
-			</ImageZoom>
-		);
-	}
-
 	return (
 		<View style={styles.pageContainer}>
+			{selectedImage ? (
+				<ImageZoom
+					// @ts-ignore typescript is wrong here again
+					style={[mainStyle, { width: "100%", height: "100%" }]}
+					cropWidth={Dimensions.get("window").width}
+					cropHeight={Dimensions.get("window").height}
+					imageWidth={Dimensions.get("window").width}
+					imageHeight={Dimensions.get("window").height}
+				>
+					<Animated.Image
+						entering={FadeIn}
+						exiting={FadeOut}
+						style={{
+							width: Dimensions.get("window").width,
+							height: Dimensions.get("window").height,
+							resizeMode: "contain",
+						}}
+						source={{
+							uri: selectedImage.uri,
+						}}
+					/>
+				</ImageZoom>
+			) : undefined}
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 4, padding: 8, flex: 1 }]}>
 					{props.type === "note" ? (

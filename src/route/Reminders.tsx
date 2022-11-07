@@ -6,62 +6,79 @@ import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
 import { datePassed, getConvenientDate, getConvenientTime, shouldDisplayTime } from "../util/getConvenientTime";
 import { View, Text, TouchableOpacity } from "../style/customComponents";
-import getAppTheme, { styles } from "../style/styles";
+import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
 import { Icon } from "@rneui/themed";
-
-const selected = {
-	borderWidth: 1,
-	borderColor: "rgb(100,200,255)",
-	color: "rgb(100,200,255)",
-};
+import { NoteFiles } from "../component/NoteFiles";
+import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 const pastDue = {
-	borderColor: "rgb(125,125,125)",
-	color: "rgb(125,125,125)",
+	backgroundColor: ACCENT,
 };
 
 type extraItemProps = { store: AppStore; timeFormat: timeFormat; mainStyle: any };
-const Item = ({ key, element, extra }: { key: number; element: reminder; extra: extraItemProps }) => {
+const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; extra: extraItemProps }) => {
 	const store = extra.store;
 	const mainStyle = extra.mainStyle;
 
 	let isSelecting = store.getState().reminders.find((value) => value.selected);
-	let selectionStyle = element.selected ? selected : undefined;
 
 	let dueDate = new Date(element.due_time);
-	let greyOutStyle = datePassed(dueDate) ? pastDue : undefined;
+	let dueStyle = datePassed(dueDate) ? pastDue : undefined;
 	let convenientDate = getConvenientDate(dueDate);
+	let sessionId = useSelector<AppStoreState>((state) => state.session_id);
 	let dueString = datePassed(dueDate)
 		? "past due"
 		: shouldDisplayTime(dueDate)
 		? `due ${convenientDate} @ ${getConvenientTime(extra.timeFormat, dueDate)}`
 		: `due ${convenientDate}`;
 
+	const invertedColor = {
+		backgroundColor: mainStyle.color,
+		color: mainStyle.backgroundColor,
+		borderColor: mainStyle.color,
+	};
+
+	const invertedText = {
+		backgroundColor: "rgba(0,0,0,0)",
+		color: mainStyle.backgroundColor,
+		borderColor: mainStyle.color,
+	};
+
+	const animatedSelection = useAnimatedStyle(() => {
+		return {
+			borderColor: SELECT,
+			borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+		};
+	});
+
 	return (
-		<TouchableOpacity
-			key={key}
-			style={[styles.note, { borderColor: mainStyle.color }, greyOutStyle, selectionStyle]}
-			onPress={() => {
-				if (isSelecting) {
-					store.dispatch(selectReminder(element.id));
-				} else {
-					store.dispatch(openNote({ type: "reminder", id: element.id }));
-				}
-			}}
-			onLongPress={() => {
-				Vibration.vibrate(50);
-				store.dispatch(selectReminder(element.id));
-			}}
+		<Animated.View
+			key={setkey}
+			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
+			style={{ justifyContent: "center" }}
+			exiting={FadeOut}
+			layout={Layout.springify().damping(1000).stiffness(1000)}
 		>
-			<Text style={[styles.headerSmall, greyOutStyle]}>{dueString}</Text>
-			{element.text ? <Text style={mainStyle}>{element.text}</Text> : undefined}
-			{element.files.length ? (
-				<View style={{ flex: 1, marginTop: 8, flexDirection: "row", alignItems: "center" }}>
-					<Icon name={"file"} type={"font-awesome"} size={12} style={{ marginRight: 8 }} color={"grey"} />
-					<Text style={{ color: "grey" }}>{element.files.length} files</Text>
+			<TouchableOpacity
+				onPress={() => {
+					if (isSelecting) {
+						store.dispatch(selectReminder(element.id));
+					} else {
+						store.dispatch(openNote({ type: "reminder", id: element.id }));
+					}
+				}}
+				onLongPress={() => {
+					Vibration.vibrate(50);
+					store.dispatch(selectReminder(element.id));
+				}}
+			>
+				<View style={[styles.note, invertedColor, animatedSelection, dueStyle]}>
+					{<Text style={[styles.headerSmall, invertedText]}>{element.text || "No note"}</Text>}
+					<Text style={[invertedText]}>{dueString}</Text>
+					<NoteFiles files={element.files} />
 				</View>
-			) : undefined}
-		</TouchableOpacity>
+			</TouchableOpacity>
+		</Animated.View>
 	);
 };
 

@@ -1,6 +1,9 @@
 import { AnyAction, configureStore, createSlice, EnhancedStore, Reducer, ThunkMiddleware } from "@reduxjs/toolkit";
 import * as FileSystem from "expo-file-system";
+import { UserCredential } from "firebase/auth";
+import { ref, set } from "firebase/database";
 import { AppState, AppStateStatus } from "react-native";
+import { FIREBASE_AUTH, FIREBASE_DATABASE, readUserData, setUserData } from "./firebase";
 
 type wrap<T> = { payload: T; type: string };
 
@@ -9,6 +12,7 @@ export type note = {
 	text: string;
 	id: number;
 	selected?: boolean;
+	session_id: number;
 	files: image[];
 };
 
@@ -26,6 +30,7 @@ export type reminder = {
 	due_time: number;
 	text: string;
 	notification_id: string;
+	session_id: number;
 	id: number;
 	selected?: boolean;
 	files: image[];
@@ -55,15 +60,22 @@ export type AppStoreState = {
 
 	theme?: "light" | "dark";
 	push_token?: string;
+	time_format: timeFormat;
+	session_id: number;
+
+	// used for comparing data states with each other
+	operation_id: number;
+	first_visit_ended: boolean;
+	store_initialized: boolean;
+
 	selected_note?: selectedNote;
 	selected_date?: selectedDate;
 	selected_image?: image;
-	time_format: timeFormat;
 };
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v8.json`;
+const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v15.json`;
 
 let initialState: AppStoreState = {
 	notes: [],
@@ -72,6 +84,10 @@ let initialState: AppStoreState = {
 	next_note_id: 1,
 	next_reminder_id: 1,
 	next_file_id: 1,
+	session_id: 1,
+	operation_id: 1,
+	first_visit_ended: false,
+	store_initialized: false,
 };
 let todosSlice = createSlice({
 	name: "todos",
@@ -110,6 +126,7 @@ let todosSlice = createSlice({
 					width: action.payload.file.width,
 				});
 
+			state.operation_id += 1;
 			state.next_file_id += 1;
 		},
 
@@ -128,10 +145,13 @@ let todosSlice = createSlice({
 				text: action.payload.text,
 				header: action.payload.header,
 				id: state.next_note_id,
+				session_id: state.session_id,
 				files: [],
 			});
 
+			state.operation_id += 1;
 			state.next_note_id += 1;
+			state.store_initialized = true;
 		},
 		addReminder(state: AppStoreState, action: wrap<{ text: string; notification_id: string; date: number }>) {
 			state.reminders.push({
@@ -140,10 +160,13 @@ let todosSlice = createSlice({
 				due_time: action.payload.date, // new Date().getTime() + 60 * 60 * 1000,
 				text: action.payload.text,
 				id: state.next_reminder_id,
+				session_id: state.session_id,
 				files: [],
 			});
 
+			state.operation_id += 1;
 			state.next_reminder_id += 1;
+			state.store_initialized = true;
 		},
 
 		selectNote(state: AppStoreState, action: wrap<number>) {
@@ -193,17 +216,31 @@ let todosSlice = createSlice({
 		setPushToken(state: AppStoreState, action: wrap<string>) {
 			state.push_token = action.payload;
 		},
+		openImage(state: AppStoreState, action: wrap<image | undefined>) {
+			state.selected_image = action.payload;
+		},
+
+		storeFirstVisit(state: AppStoreState, action: wrap<boolean>) {
+			state.first_visit_ended = action.payload;
+		},
 
 		setTheme(state: AppStoreState, action: wrap<"light" | "dark">) {
 			state.theme = action.payload;
+			state.store_initialized = true;
 		},
 
 		setTimeFormat(state: AppStoreState, action: wrap<timeFormat>) {
 			state.time_format = action.payload;
+			state.store_initialized = true;
 		},
 
-		openImage(state: AppStoreState, action: wrap<image | undefined>) {
-			state.selected_image = action.payload;
+		bumpSessionIndex(state: AppStoreState, action: wrap<undefined>) {
+			state.session_id += 1;
+			state.operation_id += 1;
+		},
+
+		overwriteCloudData(state: AppStoreState, action: wrap<AppStoreState>) {
+			return action.payload;
 		},
 	},
 });
@@ -229,6 +266,9 @@ export const {
 	setReminderNotificationId,
 	setTimeFormat,
 	openImage,
+	storeFirstVisit,
+	bumpSessionIndex,
+	overwriteCloudData,
 } = todosSlice.actions;
 export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)
@@ -248,15 +288,28 @@ export async function createStore() {
 		}
 	});
 
-	let nextForcedSaveTime = new Date().getTime() + 10000;
+	let nextForcedSaveTime = new Date().getTime() + 5000;
 	store.subscribe(() => {
 		// juust in case
 		if (new Date().getTime() > nextForcedSaveTime) {
+			console.log("force saving");
+
 			nextForcedSaveTime = new Date().getTime() + 10000;
 			let storeState = store.getState();
+			delete storeState.selected_note;
+			delete storeState.selected_image;
+			delete storeState.selected_date;
+
 			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));
+
+			if (FIREBASE_AUTH.currentUser) {
+				setUserData(storeState);
+				readUserData();
+			}
 		}
 	});
+
+	store.dispatch(bumpSessionIndex());
 
 	return store;
 }

@@ -1,20 +1,23 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { LayoutChangeEvent, LayoutRectangle, ScrollView, TouchableOpacity, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, note, addNote, openNote, selectNote, AppStore } from "../store";
-import getAppTheme, { styles } from "../style/styles";
+import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/NotesHeader";
 import { View, Text } from "../style/customComponents";
 import { Icon } from "@rneui/themed";
-import { useSharedValue } from "react-native-reanimated";
+import Animated, {
+	FadeIn,
+	FadeOut,
+	Layout,
+	LightSpeedInLeft,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-
-const selected = {
-	borderWidth: 1,
-	borderColor: "rgb(100,200,255)",
-	color: "rgb(100,200,255)",
-};
+import { NoteFiles } from "../component/NoteFiles";
 
 type dragInfo = { x: number; y: number; width: number; height: number; noteId: number };
 type extraItemProps = {
@@ -25,61 +28,57 @@ type extraItemProps = {
 	setDragInfo: (arg: dragInfo | undefined) => void;
 };
 
-const Item = ({ extra, element, key }: { key: number; element: note; extra: extraItemProps }) => {
+const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra: extraItemProps }) => {
 	const store = extra.store;
 	const mainStyle = extra.mainStyle;
 
 	let isSelecting = store.getState().notes.find((value) => value.selected);
-	let selectionStyle = element.selected ? selected : undefined;
-
 	let ref = useRef<TouchableOpacity>(null);
 	let dragging = extra.dragInfo?.noteId === element.id;
+	let sessionId = useSelector<AppStoreState>((state) => state.session_id);
+
+	const invertedColor = {
+		backgroundColor: mainStyle.color,
+		color: mainStyle.backgroundColor,
+		borderColor: mainStyle.color,
+	};
+
+	const animatedSelection = useAnimatedStyle(() => {
+		return {
+			borderColor: SELECT,
+			borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+		};
+	});
 
 	return (
-		<TouchableOpacity
-			key={key}
-			ref={ref}
-			activeOpacity={0.5}
-			onPressOut={() => {
-				console.log("long press ended");
-			}}
-			onPress={() => {
-				if (isSelecting) store.dispatch(selectNote(element.id));
-				else store.dispatch(openNote({ type: "note", id: element.id }));
-			}}
-			onLongPress={() => {
-				Vibration.vibrate(50);
-				store.dispatch(selectNote(element.id));
-				// ref.current?.measure((x, y, width, height, pageX, pageY) => {
-				// 	extra.setDragInfo({
-				// 		x: pageX,
-				// 		y: pageY,
-				// 		width,
-				// 		height,
-				// 		noteId: element.id,
-				// 	});
-				// });
-			}}
+		<Animated.View
+			style={{ justifyContent: "center" }}
+			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
+			exiting={FadeOut}
+			layout={Layout.springify().damping(1000).stiffness(1000)}
+			key={setkey}
 		>
-			<View
-				key={key}
-				style={[
-					styles.note,
-					{ backgroundColor: mainStyle.backgroundColor, borderColor: mainStyle.color },
-					selectionStyle,
-					{ opacity: dragging ? 0 : 1 },
-				]}
+			<TouchableOpacity
+				activeOpacity={0.7}
+				ref={ref}
+				onPress={() => {
+					if (isSelecting) store.dispatch(selectNote(element.id));
+					else store.dispatch(openNote({ type: "note", id: element.id }));
+				}}
+				onLongPress={() => {
+					Vibration.vibrate(50);
+					store.dispatch(selectNote(element.id));
+				}}
 			>
-				{element.header ? <Text style={[styles.headerSmall, mainStyle]}>{element.header}</Text> : undefined}
-				{element.text ? <Text style={[mainStyle]}>{element.text}</Text> : undefined}
-				{element.files.length ? (
-					<View style={{ flex: 1, marginTop: 8, flexDirection: "row", alignItems: "center" }}>
-						<Icon name={"file"} type={"font-awesome"} size={12} style={{ marginRight: 8 }} color={"grey"} />
-						<Text style={{ color: "grey" }}>{element.files.length} files</Text>
-					</View>
-				) : undefined}
-			</View>
-		</TouchableOpacity>
+				<View style={[styles.note, invertedColor, animatedSelection]}>
+					{element.header ? (
+						<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
+					) : undefined}
+					{element.text ? <Text style={[invertedColor]}>{element.text}</Text> : undefined}
+					<NoteFiles files={element.files} />
+				</View>
+			</TouchableOpacity>
+		</Animated.View>
 	);
 };
 

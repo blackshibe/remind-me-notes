@@ -33,6 +33,7 @@ export default function Route(props: props) {
 	const selectedNote = useSelector((state: AppStoreState) => state.selected_note);
 	const selectedDate = useSelector((state: AppStoreState) => state.selected_date);
 	const selectedImage = useSelector((state: AppStoreState) => state.selected_image);
+	const dummyInitialized = useSelector((state: AppStoreState) => state.first_visit_ended);
 
 	const { bottom } = useSafeAreaInsets();
 	const { mode, setMode } = useThemeMode();
@@ -50,13 +51,13 @@ export default function Route(props: props) {
 
 	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
+		if (!dummyInitialized) props.navigation.navigate("Intro");
 		if (selectedNote) props.navigation.navigate("Note");
 		if (selectedDate) props.navigation.navigate("PickReminderDate");
-	}, [selectedNote, selectedDate, selectedImage]);
+	}, [selectedNote, selectedDate, selectedImage, dummyInitialized]);
 
 	return (
 		<View style={{ flex: 1 }}>
-			<StatusBar style={mode === "dark" ? "light" : "dark"} />
 			<Tab.Navigator
 				screenOptions={({ route }) => {
 					return {

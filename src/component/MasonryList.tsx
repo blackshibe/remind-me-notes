@@ -4,7 +4,7 @@ import { View } from "../style/customComponents";
 
 type props<T, E> = {
 	data: T[];
-	renderer: (props: { element: T; key: number; extra: E }) => JSX.Element;
+	renderer: (props: { element: T; setkey: number; extra: E }) => JSX.Element;
 	columns: number;
 	extra_props: E;
 };
@@ -15,8 +15,7 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 	let current_column = 0;
 
 	props.data.forEach((element, index) => {
-		// todo: dragging behavior
-		children.push(<props.renderer element={element} key={index} extra={props.extra_props} />);
+		children.push(<props.renderer element={element} setkey={index} extra={props.extra_props} />);
 	});
 
 	children.forEach((element) => {
@@ -28,7 +27,7 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 	});
 
 	return (
-		<View style={{ flex: 1, flexDirection: "row" }}>
+		<View style={{ flex: 1, flexDirection: "row" }} key={"fuck_off"}>
 			{columns.map((value, index) => {
 				return (
 					<View
