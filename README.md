@@ -26,6 +26,10 @@ Phone app something something
 -   moving notes in MasonryList [for later]
 -   Animate switching between delete and add icons
 -   Save notes without leaving the edit screen
+-   Issues with content not saving (serialize after focus on the textbox ends or app quits while editing a note)
+-   Animate image selection
+-   Option to maximize an image to a note
+-   Truncate note content in the list view
 
 -   Privatize the Firebase API keys
 -   Invalidate the Firebase API keys
