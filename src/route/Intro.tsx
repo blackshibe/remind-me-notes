@@ -1,10 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { getAuth, signOut } from "firebase/auth";
-import React from "react";
+import React, { useEffect } from "react";
 import { Image } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { IntroButton } from "../component/IntroButton";
 import { FIREBASE_APP, FIREBASE_AUTH } from "../firebase";
+import { appLoginTabNavigator } from "../LoginWrap";
 import { AppStore, AppStoreState, storeFirstVisit } from "../store";
 import { View, Text } from "../style/customComponents";
 import getAppTheme, { styles } from "../style/styles";
@@ -14,9 +16,15 @@ import funny from "./fox.png";
 
 export default function Intro(props: {}) {
 	const mainStyle = getAppTheme();
-	const navigator = useNavigation();
+	const navigator = useNavigation<StackNavigationProp<appLoginTabNavigator, "Intro">>();
 	const store = useStore<AppStore>();
 	const user = useAuthUser();
+
+	const conflict = useSelector((state: AppStoreState) => state.conflict);
+
+	useEffect(() => {
+		if (conflict) navigator.navigate("Conflict" as never);
+	}, [conflict]);
 
 	return (
 		<View
@@ -39,9 +47,8 @@ export default function Intro(props: {}) {
 				<Text>You can back up your data with an online account, or simply use the app offline.</Text>
 
 				<View style={{ paddingTop: 25 }}>
-					{/* // FIXME */}
 					{!user ? (
-						<IntroButton press={() => navigator.navigate("Login" as never)} text="Login / Register" />
+						<IntroButton press={() => navigator.navigate("Login")} text="Login / Register" />
 					) : (
 						<IntroButton
 							press={() => {

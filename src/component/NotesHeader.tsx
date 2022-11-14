@@ -14,12 +14,12 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 	const mainStyle = getAppTheme();
 	const { top } = useSafeAreaInsets();
 
-	let state = useSelector((state: AppStoreState) => state.notes);
-	let isSelecting = state.find((value) => value.selected);
+	let notes = useSelector((state: AppStoreState) => state.notes);
+	let isSelecting = notes?.find((value) => value.selected);
 
 	const deleteNotes = () =>
 		quickWarnAlert(() => {
-			state.forEach((element) => {
+			notes?.forEach((element) => {
 				if (element.selected) store.dispatch(deleteNote(element.id));
 			});
 		}, "Delete the selected notes?");

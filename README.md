@@ -1,6 +1,23 @@
 # remind-me
 
-Phone app something something
+App for Android that lets you easily keep notes and reminders in one place.
+
+# setup
+
+create a file called `secrets.json` in `src/env` with the following information:
+
+```json
+// fill this out according to your Firebase project
+{
+	"FIREBASE_API_KEY": " ... ",
+	"FIREBASE_AUTH_DOMAIN": " ... ",
+	"FIREBASE_DATABASE_URL": " ... ",
+	"FIREBASE_PROJECT_ID": " ... ",
+	"FIREBASE_STORAGE_BUCKET": " ... ",
+	"FIREBASE_MESSAGING_SENDER_ID": " ... ",
+	"FIREBASE_APP_ID": " ... "
+}
+```
 
 ## todo
 
@@ -22,15 +39,23 @@ Phone app something something
 -   Split every loose component into each separate file [x]
 -   Logging into firebase [x]
 -   Splash screen for new app installs [x]
+-   Privatize the Firebase API keys [x]
+-   Saving app data to firebase [x]
+-   Reading app data from Firebase [x]
+-   Truncate note content in the list view [x]
+-   Save notes without leaving the edit screen [x]
 
 -   moving notes in MasonryList [for later]
--   Animate switching between delete and add icons
--   Save notes without leaving the edit screen
--   Issues with content not saving (serialize after focus on the textbox ends or app quits while editing a note)
--   Animate image selection
--   Option to maximize an image to a note
--   Truncate note content in the list view
 
--   Privatize the Firebase API keys
--   Invalidate the Firebase API keys
--   Saving app data to firebase
+-   Animate image selection
+-   Animate switching between delete and add icons
+-   Option to maximize an image to a note
+-   Finish conflict screen
+-   Note copy feature
+
+-   Images over firebase
+-   Local backups
+
+## testing
+
+-   make sure notifications carry over when restoring cloud state

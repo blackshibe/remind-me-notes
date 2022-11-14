@@ -32,9 +32,9 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 	const store = extra.store;
 	const mainStyle = extra.mainStyle;
 
-	let isSelecting = store.getState().notes.find((value) => value.selected);
+	let notes = useSelector((state: AppStoreState) => state.notes) || [];
+	let isSelecting = notes.find((value) => value.selected);
 	let ref = useRef<TouchableOpacity>(null);
-	let dragging = extra.dragInfo?.noteId === element.id;
 	let sessionId = useSelector<AppStoreState>((state) => state.session_id);
 
 	const invertedColor = {
@@ -45,10 +45,12 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
-			borderColor: SELECT,
-			borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+			backgroundColor: element.selected ? SELECT : mainStyle.color,
+			// borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
 		};
 	});
+
+	let truncatedText = element.text.length > 70 ? `${element.text.substring(1, 70)}...` : element.text;
 
 	return (
 		<Animated.View
@@ -74,7 +76,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 					{element.header ? (
 						<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
 					) : undefined}
-					{element.text ? <Text style={[invertedColor]}>{element.text}</Text> : undefined}
+					{truncatedText ? <Text style={[invertedColor]}>{truncatedText}</Text> : undefined}
 					<NoteFiles files={element.files} />
 				</View>
 			</TouchableOpacity>
@@ -84,7 +86,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 
 export default function Notes() {
 	const mainStyle = getAppTheme();
-	const todos = useSelector((state: AppStoreState) => state.notes);
+	const todos = useSelector((state: AppStoreState) => state.notes) || [];
 	const store = useStore<AppStoreState>();
 
 	// remove later
@@ -93,9 +95,8 @@ export default function Notes() {
 	return (
 		<View style={styles.pageContainer}>
 			<Header route={{ name: "Notes" }} />
-			{todos.length === 0 ? (
-				<Text style={{ width: "100%", textAlign: "center" }}>No notes added yet...</Text>
-			) : (
+			{todos.length === 0 && <Text style={{ width: "100%", textAlign: "center" }}>No notes added yet...</Text>}
+			{todos.length !== 0 && (
 				<ScrollView
 					scrollEnabled={dragInfo == undefined}
 					style={{
@@ -106,15 +107,13 @@ export default function Notes() {
 					}}
 				>
 					<MasonryList
-						data={[...todos]}
+						data={todos}
 						renderer={Item}
 						columns={2}
 						extra_props={{ store, mainStyle, dragInfo, setDragInfo }}
 					/>
 				</ScrollView>
 			)}
-
-			{/* {dragInfo ? <DraggableSkeleton dragInfo={dragInfo} /> : undefined} */}
 		</View>
 	);
 }

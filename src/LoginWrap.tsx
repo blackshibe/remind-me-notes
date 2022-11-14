@@ -1,11 +1,12 @@
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, StackNavigationProp } from "@react-navigation/stack";
 import { useThemeMode } from "@rneui/themed";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useSelector } from "react-redux";
 import Route from "./Route";
+import Conflict from "./route/Conflict";
 import EditNoteRouter from "./route/EditNoteRouter";
 import Intro from "./route/Intro";
 import Login from "./route/Login";
@@ -13,8 +14,14 @@ import PickReminderDate from "./route/PickReminderDate";
 import { AppStoreState } from "./store";
 import getAppTheme from "./style/styles";
 
+export type appLoginTabNavigator = {
+	Intro: undefined;
+	Login: undefined;
+	Conflict: undefined;
+};
+
 const Stack = createStackNavigator();
-const LoginTab = createStackNavigator();
+const LoginTab = createStackNavigator<appLoginTabNavigator>();
 
 export const LoginWrap = () => {
 	let firstVisit = useSelector((state: AppStoreState) => state.first_visit_ended);
@@ -31,6 +38,7 @@ export const LoginWrap = () => {
 				>
 					<LoginTab.Screen name="Intro" component={Intro} />
 					<LoginTab.Screen name="Login" component={Login} />
+					<LoginTab.Screen name="Conflict" component={Conflict} />
 				</LoginTab.Navigator>
 			</NavigationContainer>
 		);

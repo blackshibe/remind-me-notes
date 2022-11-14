@@ -17,16 +17,16 @@ export default function PickReminderDate(props: { navigation: any }) {
 	const selected_date = useSelector((state: AppStoreState) => state.selected_date)!;
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
 
-	const selectedReminder = reminders.find((value) => value.id === selected_date?.id);
+	const selectedReminder = reminders?.find((value) => value.id === selected_date?.id);
 	const [selectingTime, selectTime] = useState<"none" | "date" | "time">("none");
 	const store = useStore<AppStoreState>();
 	const dueDate = new Date(selectedReminder?.due_time || 0);
 
 	useBackButton(props.navigation, () => store.dispatch(pickReminderDate()));
-	// FIXME lazy types
+
 	const setDate = (date: DateTimePickerEvent) => {
-		if (date.type === "set" && date.nativeEvent.timestamp) {
-			updateNotification(store, selectedReminder!);
+		if (date.type === "set" && date.nativeEvent.timestamp && selectedReminder) {
+			updateNotification(store, selectedReminder);
 			store.dispatch(setReminderDate([selected_date, date.nativeEvent.timestamp]));
 		}
 		selectTime("none");

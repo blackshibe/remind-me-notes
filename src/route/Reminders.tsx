@@ -20,7 +20,8 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 	const store = extra.store;
 	const mainStyle = extra.mainStyle;
 
-	let isSelecting = store.getState().reminders.find((value) => value.selected);
+	let reminders = useSelector((state: AppStoreState) => state.reminders) || [];
+	let isSelecting = reminders.find((value) => value.selected);
 
 	let dueDate = new Date(element.due_time);
 	let dueStyle = datePassed(dueDate) ? pastDue : undefined;
@@ -46,14 +47,13 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
-			borderColor: SELECT,
-			borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+			backgroundColor: element.selected ? SELECT : mainStyle.color,
+			// borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
 		};
 	});
 
 	return (
 		<Animated.View
-			key={setkey}
 			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
 			style={{ justifyContent: "center" }}
 			exiting={FadeOut}
@@ -84,7 +84,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 
 export default function Reminders() {
 	const mainStyle = getAppTheme();
-	const reminders = useSelector((state: AppStoreState) => state.reminders);
+	const reminders = useSelector((state: AppStoreState) => state.reminders) || [];
 	const store = useStore<AppStoreState>();
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
 
@@ -95,9 +95,10 @@ export default function Reminders() {
 	return (
 		<View style={styles.pageContainer}>
 			<RemindersHeader route={{ name: "Reminders" }} />
-			{reminders.length === 0 ? (
+			{reminders.length === 0 && (
 				<Text style={{ width: "100%", textAlign: "center" }}>No reminders added yet...</Text>
-			) : (
+			)}
+			{reminders.length !== 0 && (
 				<ScrollView
 					style={{
 						flex: 1, // the number of columns you want to devide the screen into

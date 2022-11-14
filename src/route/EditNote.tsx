@@ -39,11 +39,10 @@ export default function EditNote(props: editNoteProps) {
 	const navigation = useNavigation();
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
 
-	// FIXME shitshow
 	const selectedNote =
 		props.type === "note"
-			? todos.find((value) => value.id === props.selected_id)!
-			: reminders.find((value) => value.id === props.selected_id)!;
+			? todos?.find((value) => value.id === props.selected_id)!
+			: reminders?.find((value) => value.id === props.selected_id)!;
 
 	const store = useStore<AppStoreState>();
 	const selectedImage = useSelector((state: AppStoreState) => state.selected_image);
@@ -72,15 +71,7 @@ export default function EditNote(props: editNoteProps) {
 				return;
 			}
 
-			if (props.type === "note") {
-				store.dispatch(editNote({ id: props.selected_id, header, text }));
-				store.dispatch(openNote());
-			} else {
-				updateNotification(store, selectedNote as reminder);
-
-				store.dispatch(editReminder({ id: props.selected_id, text }));
-				store.dispatch(openNote());
-			}
+			if (props.type === "reminder") updateNotification(store, selectedNote as reminder);
 		},
 		[selectedImage]
 	);
@@ -117,7 +108,10 @@ export default function EditNote(props: editNoteProps) {
 							style={styles.header}
 							placeholder={"Header"}
 							placeholderTextColor={"grey"}
-							onChangeText={(new_header) => (header = new_header)}
+							onChangeText={(new_header) => {
+								header = new_header;
+								store.dispatch(editNote({ id: props.selected_id, header, text }));
+							}}
 							defaultValue={header}
 						/>
 					) : (
@@ -141,7 +135,12 @@ export default function EditNote(props: editNoteProps) {
 						placeholder={"Text"}
 						placeholderTextColor={"grey"}
 						textAlignVertical={"top"}
-						onChangeText={(new_text) => (text = new_text)}
+						onChangeText={(new_text) => {
+							text = new_text;
+							if (props.type === "reminder")
+								store.dispatch(editReminder({ id: props.selected_id, text }));
+							else store.dispatch(editNote({ id: props.selected_id, text }));
+						}}
 						defaultValue={text}
 					/>
 					<Text style={[mainStyle, { marginBottom: 8 }]}>{files.length} files attached</Text>
@@ -185,7 +184,6 @@ export default function EditNote(props: editNoteProps) {
 
 				<BottomBarButton
 					onclick={async () => {
-						console.log("Image pressed");
 						let result = await ImagePicker.launchImageLibraryAsync();
 						if (result.cancelled) return;
 

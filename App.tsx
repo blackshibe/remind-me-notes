@@ -7,7 +7,6 @@ import usePromise from "./src/util/usePromise";
 import { ThemeProvider } from "@rneui/themed";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Platform, View } from "react-native";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { LoginWrap } from "./src/LoginWrap";
 
 Notifications.setNotificationHandler({

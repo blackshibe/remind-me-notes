@@ -24,7 +24,6 @@
 				"backgroundColor": "#FFFFFF"
 			},
 			"permissions": ["VIBRATE", "WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "SCHEDULE_EXACT_ALARM"],
-			"googleServicesFile": "./google-services.json",
 			"package": "com.blackshibe.reminders"
 		},
 		"web": {

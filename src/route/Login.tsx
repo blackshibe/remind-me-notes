@@ -5,14 +5,16 @@ import React, { useEffect, useState } from "react";
 import { TextInput } from "react-native-gesture-handler";
 import { useSelector, useStore } from "react-redux";
 import { IntroButton } from "../component/IntroButton";
-import { AppStore, AppStoreState, storeFirstVisit } from "../store";
+import { AppStore, AppStoreState, overwriteUserData, setSyncConflict, storeFirstVisit } from "../store";
 import { View, Text } from "../style/customComponents";
 import { FIREBASE_APP, FIREBASE_AUTH, readUserData } from "../firebase";
 import getAppTheme, { styles } from "../style/styles";
+import { appLoginTabNavigator } from "../LoginWrap";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { updateNotifications } from "../util/updateNotification";
 
 export default function Login(props: {}) {
-	const mainStyle = getAppTheme();
-	const navigator = useNavigation();
+	const navigator = useNavigation<StackNavigationProp<appLoginTabNavigator, "Intro">>();
 	const store = useStore<AppStoreState>();
 
 	let passwd = useState("");
@@ -29,13 +31,13 @@ export default function Login(props: {}) {
 			<Text style={styles.header}>Setup</Text>
 
 			<View style={{ paddingTop: 25, minWidth: "70%" }}>
-				{/* // FIXME */}
 				<TextInput
 					onChangeText={(value) => username[1](value)}
 					style={{ backgroundColor: "black", color: "white", padding: 10, borderRadius: 8, marginBottom: 8 }}
 					placeholder={"username"}
 					placeholderTextColor={"grey"}
 				/>
+
 				<TextInput
 					secureTextEntry={true}
 					onChangeText={(value) => passwd[1](value)}
@@ -74,24 +76,30 @@ export default function Login(props: {}) {
 								let local_state = store.getState();
 								let cloud_state = await readUserData();
 
-								console.log("App signed in as", userCredential.user.email);
+								console.log("app signed in as", userCredential.user.email);
 								console.log("local data initialized:", local_state.store_initialized);
 								console.log("cloud initialized:", cloud_state !== undefined);
 
-								if (cloud_state)
-									console.log(
-										"cloud data differs from local state:",
-										cloud_state?.operation_id !== local_state.operation_id
-									);
+								let conflict_occuring =
+									cloud_state?.operation_id !== local_state.operation_id &&
+									local_state.store_initialized;
 
-								store.dispatch(storeFirstVisit(true));
+								if (conflict_occuring && cloud_state) {
+									store.dispatch(setSyncConflict(cloud_state));
+									navigator.navigate("Conflict");
+								} else {
+									if (cloud_state) store.dispatch(overwriteUserData(cloud_state));
+
+									updateNotifications(store);
+									store.dispatch(storeFirstVisit(true));
+								}
 							})
 							.catch((error) => {
 								const errorCode = error.code;
 								const errorMessage = error.message;
 
 								fuckup[1](errorMessage);
-								console.log(errorCode, errorMessage);
+								console.log(`failure while signing in: code=${errorCode} message=${errorMessage}`);
 							});
 					}}
 					text="Login"

@@ -17,12 +17,12 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 	const { top } = useSafeAreaInsets();
 	const mainStyle = getAppTheme();
 
-	let state = useSelector((state: AppStoreState) => state.reminders);
-	let isSelecting = state.find((value) => value.selected);
+	let reminders = useSelector((state: AppStoreState) => state.reminders);
+	let isSelecting = reminders?.find((value) => value.selected);
 
 	const deleteReminders = () =>
 		quickWarnAlert(() => {
-			state.forEach((element) => {
+			reminders?.forEach((element) => {
 				if (element.selected) {
 					store.dispatch(deleteReminder(element.id));
 					Notifications.cancelScheduledNotificationAsync(element.notification_id);

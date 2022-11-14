@@ -20,14 +20,14 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 
 	children.forEach((element) => {
 		columns[current_column] = columns[current_column] || [];
-		columns[current_column].push(element);
+		columns[current_column].push(<View key={columns[current_column].length}>{element}</View>);
 
 		current_column += 1;
 		current_column %= props.columns;
 	});
 
 	return (
-		<View style={{ flex: 1, flexDirection: "row" }} key={"fuck_off"}>
+		<View style={{ flex: 1, flexDirection: "row" }}>
 			{columns.map((value, index) => {
 				return (
 					<View
