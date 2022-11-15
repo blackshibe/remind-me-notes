@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { ScrollView, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, reminder, AppStore, selectReminder, openNote, timeFormat, note } from "../store";
+import { AppStoreState, reminder, AppStore, openNote, timeFormat, note, selectNote } from "../store";
 import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
 import { datePassed, getConvenientDate, getConvenientTime, shouldDisplayTime } from "../util/getConvenientTime";
 import { View, Text, TouchableOpacity } from "../style/customComponents";
 import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
-import { Icon } from "@rneui/themed";
 import { NoteFiles } from "../component/NoteFiles";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
@@ -20,7 +19,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 	const store = extra.store;
 	const mainStyle = extra.mainStyle;
 
-	let reminders = useSelector((state: AppStoreState) => state.reminders) || [];
+	let reminders = useSelector((state: AppStoreState) => state.notes) || [];
 	let isSelecting = reminders.find((value) => value.selected);
 
 	let dueDate = new Date(element.due_time);
@@ -48,7 +47,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
 			backgroundColor: element.selected ? SELECT : mainStyle.color,
-			// borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+			borderColor: element.selected ? SELECT : mainStyle.color,
 		};
 	});
 
@@ -62,20 +61,46 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 			<TouchableOpacity
 				onPress={() => {
 					if (isSelecting) {
-						store.dispatch(selectReminder(element.id));
+						store.dispatch(selectNote(element.id));
 					} else {
 						store.dispatch(openNote({ type: "reminder", id: element.id }));
 					}
 				}}
 				onLongPress={() => {
 					Vibration.vibrate(50);
-					store.dispatch(selectReminder(element.id));
+					store.dispatch(selectNote(element.id));
 				}}
 			>
 				<View style={[styles.note, invertedColor, animatedSelection, dueStyle]}>
-					{<Text style={[styles.headerSmall, invertedText]}>{element.text || "No note"}</Text>}
-					<Text style={[invertedText]}>{dueString}</Text>
-					<NoteFiles files={element.files} />
+					<View
+						style={[
+							{
+								padding: 16,
+								backgroundColor: "rgba(0,0,0,0)",
+							},
+						]}
+					>
+						{<Text style={[styles.headerSmall, invertedText]}>{element.text || "No note"}</Text>}
+						<Text style={[invertedText]}>{dueString}</Text>
+						{!element.pinned_image && <NoteFiles files={element.files} />}
+					</View>
+
+					{element.pinned_image && (
+						<Animated.Image
+							entering={FadeIn}
+							source={{ uri: element.files?.find((value) => value.id === element.pinned_image)?.uri }}
+							style={[
+								{
+									width: "100%",
+									height: 120,
+									borderBottomLeftRadius: 16,
+									borderBottomRightRadius: 16,
+									borderWidth: 1,
+								},
+								animatedSelection,
+							]}
+						/>
+					)}
 				</View>
 			</TouchableOpacity>
 		</Animated.View>
@@ -84,7 +109,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 
 export default function Reminders() {
 	const mainStyle = getAppTheme();
-	const reminders = useSelector((state: AppStoreState) => state.reminders) || [];
+	const notes = useSelector((state: AppStoreState) => state.notes) || [];
 	const store = useStore<AppStoreState>();
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
 
@@ -95,10 +120,10 @@ export default function Reminders() {
 	return (
 		<View style={styles.pageContainer}>
 			<RemindersHeader route={{ name: "Reminders" }} />
-			{reminders.length === 0 && (
+			{notes.length === 0 && (
 				<Text style={{ width: "100%", textAlign: "center" }}>No reminders added yet...</Text>
 			)}
-			{reminders.length !== 0 && (
+			{notes.length !== 0 && (
 				<ScrollView
 					style={{
 						flex: 1, // the number of columns you want to devide the screen into
@@ -108,7 +133,7 @@ export default function Reminders() {
 					}}
 				>
 					<MasonryList
-						data={reminders}
+						data={notes.filter((value) => value.type === "reminder") as reminder[]}
 						renderer={Item}
 						columns={2}
 						extra_props={{ store, timeFormat, mainStyle }}

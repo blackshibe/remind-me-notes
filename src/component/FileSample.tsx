@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Vibration } from "react-native";
 import { useStore } from "react-redux";
-import { image, deleteFileFromNote, openImage, deleteFileFromReminder } from "../store";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { BottomBarButton } from "./BottomBarButton";
-import { Image } from "react-native";
 import { TouchableOpacity, View } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import getAppTheme from "../style/styles";
+import { deleteFile, image, openImage, pinFile } from "../store";
 
 type fileSampleProps = { note_id: number; index: number; type: string; full: boolean; data: image };
 export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
+	const mainStyle = getAppTheme();
 	let store = useStore();
 
 	return (
@@ -36,23 +37,23 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 					}}
 				>
 					<BottomBarButton
-						style={{ margin: 0, marginBottom: 4 }}
+						style={{ margin: 0 }}
+						onclick={() => {
+							store.dispatch(pinFile({ file_id: data.id, note_id }));
+							setSelected(false);
+						}}
+						name={"star"}
+					/>
+					<BottomBarButton
+						style={{ margin: 0, marginBottom: 4, marginTop: 4 }}
 						onclick={() =>
 							quickWarnAlert(() => {
-								if (type === "note") {
-									store.dispatch(deleteFileFromNote({ file_id: data.id, note_id }));
-								} else {
-									store.dispatch(deleteFileFromReminder({ file_id: data.id, note_id }));
-								}
+								store.dispatch(deleteFile({ file_id: data.id, note_id }));
 							}, "Do you want to delete this file?")
 						}
 						name={"trash"}
 					/>
-					<BottomBarButton
-						style={{ margin: 0, marginTop: 4 }}
-						onclick={() => setSelected(false)}
-						name={"undo"}
-					/>
+					<BottomBarButton style={{ margin: 0 }} onclick={() => setSelected(false)} name={"undo"} />
 				</View>
 			) : (
 				<Animated.View
@@ -66,7 +67,13 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 					<Animated.Image
 						entering={FadeIn}
 						source={{ uri: data.uri }}
-						style={{ width: "100%", height: "100%", borderRadius: 8 }}
+						style={{
+							width: "100%",
+							height: "100%",
+							borderRadius: 8,
+							borderWidth: 2,
+							borderColor: mainStyle.color,
+						}}
 					/>
 				</Animated.View>
 			)}

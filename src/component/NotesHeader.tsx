@@ -1,12 +1,13 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
-import getAppTheme from "../style/styles";
+import getAppTheme, { ACCENT } from "../style/styles";
 import { useSelector, useStore } from "react-redux";
 import { addNote, AppStoreState, deleteNote } from "../store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { View, Text } from "../style/customComponents";
+import Animated, { FadeOut, FadeIn } from "react-native-reanimated";
 
 // TODO: import BottomTabHeaderProps
 export const Header = (props: { route: { name?: string } }): JSX.Element => {
@@ -22,7 +23,7 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 			notes?.forEach((element) => {
 				if (element.selected) store.dispatch(deleteNote(element.id));
 			});
-		}, "Delete the selected notes?");
+		}, "Delete the selected items?");
 
 	const addNewNote = () => {
 		store.dispatch(addNote({ header: "New Note", text: "text" }));
@@ -37,7 +38,16 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 					style={{ height: 32, width: 32, justifyContent: "center" }}
 					onPress={isSelecting ? deleteNotes : addNewNote}
 				>
-					<Icon name={isSelecting ? "delete" : "add"} size={32} color={mainStyle.color} />
+					{!isSelecting && (
+						<Animated.View exiting={FadeOut} entering={FadeIn}>
+							<Icon name={"add"} size={32} color={mainStyle.color} />
+						</Animated.View>
+					)}
+					{isSelecting && (
+						<Animated.View exiting={FadeOut} entering={FadeIn}>
+							<Icon name={"delete"} size={32} color={ACCENT} />
+						</Animated.View>
+					)}
 				</TouchableOpacity>
 			</View>
 		</View>

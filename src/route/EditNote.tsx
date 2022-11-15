@@ -4,13 +4,13 @@ import {
 	AppStoreState,
 	editNote,
 	openNote,
-	attachFileToNote,
+	attachFile,
 	pickReminderDate,
 	editReminder,
-	reminder,
-	note,
 	openImage,
-	attachFileToReminder,
+	pinFile,
+	reminder,
+	selectNote,
 } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import * as ImagePicker from "expo-image-picker";
@@ -19,12 +19,11 @@ import { getConvenientDate, getConvenientTime } from "../util/getConvenientTime"
 import { updateNotification } from "../util/updateNotification";
 import { BottomBarButton } from "../component/BottomBarButton";
 import { FileSample } from "../component/FileSample";
-import { Dimensions, FlatList, Modal, Image } from "react-native";
+import { Dimensions, FlatList } from "react-native";
 import { TouchableOpacity, View, Text, TextInput } from "../style/customComponents";
 import ImageZoom from "react-native-image-pan-zoom";
 import { useNavigation } from "@react-navigation/native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { fadeOut } from "react-navigation-transitions";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -34,24 +33,26 @@ type editNoteProps =
 
 export default function EditNote(props: editNoteProps) {
 	const mainStyle = getAppTheme();
-	const todos = useSelector((state: AppStoreState) => state.notes);
-	const reminders = useSelector((state: AppStoreState) => state.reminders);
+	const notes = useSelector((state: AppStoreState) => state.notes);
 	const navigation = useNavigation();
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
-
-	const selectedNote =
-		props.type === "note"
-			? todos?.find((value) => value.id === props.selected_id)!
-			: reminders?.find((value) => value.id === props.selected_id)!;
-
+	const selectedNote = notes?.find((value) => value.id === props.selected_id)!;
 	const store = useStore<AppStoreState>();
 	const selectedImage = useSelector((state: AppStoreState) => state.selected_image);
 
-	let header = selectedNote?.header;
-	let text = selectedNote?.text;
-	let files = selectedNote.files;
+	useEffect(() => {
+		if (!selectedNote) {
+			store.dispatch(openNote(undefined));
+		}
+	}, []);
 
-	let dueDate = new Date((selectedNote as reminder).due_time);
+	if (!selectedNote) return <></>;
+
+	let header = selectedNote.header;
+	let text = selectedNote.text;
+	let files = selectedNote.files || [];
+
+	let dueDate = selectedNote.type === "reminder" ? new Date(selectedNote.due_time) : new Date();
 	let preventDefaultNavigate = false;
 
 	useEffect(() => {
@@ -103,7 +104,7 @@ export default function EditNote(props: editNoteProps) {
 			) : undefined}
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 4, padding: 8, flex: 1 }]}>
-					{props.type === "note" ? (
+					{selectedNote.type === "note" ? (
 						<TextInput
 							style={styles.header}
 							placeholder={"Header"}
@@ -175,41 +176,35 @@ export default function EditNote(props: editNoteProps) {
 					flexDirection: "row",
 				}}
 			>
-				<BottomBarButton
-					onclick={() => {
-						console.log("Copy pressed");
-					}}
-					name={"copy"}
-				/>
+				{selectedNote.pinned_image && (
+					<BottomBarButton
+						onclick={() => {
+							store.dispatch(
+								pinFile({
+									note_id: selectedNote.id,
+									file_id: undefined,
+								})
+							);
+						}}
+						name={"star-half"}
+					/>
+				)}
 
 				<BottomBarButton
 					onclick={async () => {
 						let result = await ImagePicker.launchImageLibraryAsync();
 						if (result.cancelled) return;
 
-						if (props.type === "note") {
-							store.dispatch(
-								attachFileToNote({
-									id: selectedNote.id,
-									file: {
-										uri: result.uri,
-										height: result.height,
-										width: result.width,
-									},
-								})
-							);
-						} else {
-							store.dispatch(
-								attachFileToReminder({
-									id: selectedNote.id,
-									file: {
-										uri: result.uri,
-										height: result.height,
-										width: result.width,
-									},
-								})
-							);
-						}
+						store.dispatch(
+							attachFile({
+								id: selectedNote.id,
+								file: {
+									uri: result.uri,
+									height: result.height,
+									width: result.width,
+								},
+							})
+						);
 					}}
 					name={"image"}
 				/>

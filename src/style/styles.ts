@@ -6,11 +6,14 @@ export const SPRING_PROPERTIES = { stiffness: 1000, damping: 1000 };
 export const ACCENT = "#FF5550";
 export const SELECT = "#FF0550";
 
+const DARK_COLOR = "rgba(1,1,1, 1)";
+const LIGHT_COLOR = "rgba(255, 237, 227, 1)";
+
 export default function getAppTheme() {
 	const { mode, setMode } = useThemeMode();
 
-	const BACKGROUND_COLOR = mode === "dark" ? "black" : "white";
-	const FOREGROUND_COLOR = mode === "dark" ? "white" : "black";
+	const BACKGROUND_COLOR = mode === "dark" ? DARK_COLOR : LIGHT_COLOR;
+	const FOREGROUND_COLOR = mode === "dark" ? LIGHT_COLOR : DARK_COLOR;
 
 	return {
 		color: FOREGROUND_COLOR,
@@ -18,21 +21,6 @@ export default function getAppTheme() {
 		fontFamily: "Ubuntu",
 	};
 }
-
-// export function getAnimatedAppTheme() {
-// 	const { mode, setMode } = useThemeMode();
-
-// 	const BACKGROUND_COLOR = mode === "dark" ? "black" : "white";
-// 	const FOREGROUND_COLOR = mode === "dark" ? "white" : "black";
-
-// 	return useAnimatedStyle(() => {
-// 		return {
-// 			color: withSpring(FOREGROUND_COLOR),
-// 			backgroundColor: withSpring(BACKGROUND_COLOR),
-// 			fontFamily: "Ubuntu",
-// 		};
-// 	});
-// }
 
 export const styles = StyleSheet.create({
 	tabBar: {
@@ -53,7 +41,6 @@ export const styles = StyleSheet.create({
 
 	note: {
 		borderRadius: 16,
-		padding: 16,
 		margin: 8,
 	},
 

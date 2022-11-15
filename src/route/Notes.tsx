@@ -1,22 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { LayoutChangeEvent, LayoutRectangle, ScrollView, TouchableOpacity, Vibration } from "react-native";
+import { ScrollView, TouchableOpacity, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, note, addNote, openNote, selectNote, AppStore } from "../store";
-import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
+import { AppStoreState, openNote, selectNote, AppStore, note } from "../store";
+import getAppTheme, { SELECT, styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/NotesHeader";
 import { View, Text } from "../style/customComponents";
-import { Icon } from "@rneui/themed";
-import Animated, {
-	FadeIn,
-	FadeOut,
-	Layout,
-	LightSpeedInLeft,
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring,
-} from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle } from "react-native-reanimated";
 import { NoteFiles } from "../component/NoteFiles";
 
 type dragInfo = { x: number; y: number; width: number; height: number; noteId: number };
@@ -46,7 +36,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
 			backgroundColor: element.selected ? SELECT : mainStyle.color,
-			// borderWidth: withSpring(element.selected ? 2 : 0, SPRING_PROPERTIES),
+			borderColor: element.selected ? SELECT : mainStyle.color,
 		};
 	});
 
@@ -54,7 +44,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 
 	return (
 		<Animated.View
-			style={{ justifyContent: "center" }}
+			style={[{ justifyContent: "center" }]}
 			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
 			exiting={FadeOut}
 			layout={Layout.springify().damping(1000).stiffness(1000)}
@@ -73,11 +63,35 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 				}}
 			>
 				<View style={[styles.note, invertedColor, animatedSelection]}>
-					{element.header ? (
-						<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
-					) : undefined}
-					{truncatedText ? <Text style={[invertedColor]}>{truncatedText}</Text> : undefined}
-					<NoteFiles files={element.files} />
+					<View
+						style={{
+							padding: 16,
+							backgroundColor: "rgba(0,0,0,0)",
+						}}
+					>
+						{element.header ? (
+							<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
+						) : undefined}
+						{truncatedText ? <Text style={[invertedColor]}>{truncatedText}</Text> : undefined}
+						{!element.pinned_image && <NoteFiles files={element.files} />}
+					</View>
+
+					{element.pinned_image && (
+						<Animated.Image
+							entering={FadeIn}
+							source={{ uri: element.files?.find((value) => value.id === element.pinned_image)?.uri }}
+							style={[
+								{
+									width: "100%",
+									height: 160,
+									borderBottomLeftRadius: 16,
+									borderBottomRightRadius: 16,
+									borderWidth: 1,
+								},
+								animatedSelection,
+							]}
+						/>
+					)}
 				</View>
 			</TouchableOpacity>
 		</Animated.View>
@@ -107,7 +121,7 @@ export default function Notes() {
 					}}
 				>
 					<MasonryList
-						data={todos}
+						data={todos.filter((value) => value.type === "note") as note[]}
 						renderer={Item}
 						columns={2}
 						extra_props={{ store, mainStyle, dragInfo, setDragInfo }}

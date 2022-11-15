@@ -44,17 +44,15 @@ create a file called `secrets.json` in `src/env` with the following information:
 -   Reading app data from Firebase [x]
 -   Truncate note content in the list view [x]
 -   Save notes without leaving the edit screen [x]
+-   Animate switching between delete and add icons [x]
+-   Option to maximize an image to a note [x]
 
--   moving notes in MasonryList [for later]
+## todo
 
--   Animate image selection
--   Animate switching between delete and add icons
--   Option to maximize an image to a note
--   Finish conflict screen
--   Note copy feature
-
--   Images over firebase
--   Local backups
+-   images over firebase
+-   fix setting reminder dates
+-   aspect ratio on images in notes
+-   prettier text truncation
 
 ## testing
 

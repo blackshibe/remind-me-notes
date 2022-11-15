@@ -23,8 +23,8 @@ export const BottomBarButton = ({ onclick, name, style }: buttonProps) => {
 				style,
 			]}
 		>
-			<Animated.View exiting={FadeOut} entering={FadeIn}>
-				<Icon name={name} type={"font-awesome"} size={24} color={mainStyle.backgroundColor} />
+			<Animated.View entering={FadeIn}>
+				<Icon name={name} type={"font-awesome"} size={18} color={mainStyle.backgroundColor} />
 			</Animated.View>
 		</TouchableOpacity>
 	);

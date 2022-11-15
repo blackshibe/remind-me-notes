@@ -2,10 +2,10 @@ import React from "react";
 import { Alert, Button, Text } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { addReminder, addNote, AppStoreState, deleteNote, deleteReminder } from "../store";
+import { addReminder, addNote, AppStoreState, deleteNote } from "../store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import getAppTheme from "../style/styles";
+import getAppTheme, { ACCENT } from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { View } from "../style/customComponents";
 import * as Notifications from "expo-notifications";
@@ -17,18 +17,20 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 	const { top } = useSafeAreaInsets();
 	const mainStyle = getAppTheme();
 
-	let reminders = useSelector((state: AppStoreState) => state.reminders);
-	let isSelecting = reminders?.find((value) => value.selected);
+	let notes = useSelector((state: AppStoreState) => state.notes);
+	let isSelecting = notes?.find((value) => value.selected);
 
 	const deleteReminders = () =>
 		quickWarnAlert(() => {
-			reminders?.forEach((element) => {
+			notes?.forEach((element) => {
 				if (element.selected) {
-					store.dispatch(deleteReminder(element.id));
-					Notifications.cancelScheduledNotificationAsync(element.notification_id);
+					store.dispatch(deleteNote(element.id));
+					if (element.type === "reminder") {
+						Notifications.cancelScheduledNotificationAsync(element.notification_id);
+					}
 				}
 			});
-		}, "Delete the selected reminders?");
+		}, "Delete the selected items?");
 
 	const addNote = async () => {
 		let date = new Date().getTime() + 60 * 60 * 1000;
@@ -53,7 +55,16 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 					style={{ height: 32, width: 32, justifyContent: "center" }}
 					onPress={isSelecting ? deleteReminders : addNote}
 				>
-					<Icon name={isSelecting ? "delete" : "add"} size={32} color={mainStyle.color} />
+					{!isSelecting && (
+						<Animated.View exiting={FadeOut} entering={FadeIn}>
+							<Icon name={"add"} size={32} color={mainStyle.color} />
+						</Animated.View>
+					)}
+					{isSelecting && (
+						<Animated.View exiting={FadeOut} entering={FadeIn}>
+							<Icon name={"delete"} size={32} color={ACCENT} />
+						</Animated.View>
+					)}
 				</TouchableOpacity>
 			</Animated.View>
 		</View>

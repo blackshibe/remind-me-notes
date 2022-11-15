@@ -4,7 +4,7 @@ import { View, Text } from "../style/customComponents";
 import { image } from "../store";
 import getAppTheme from "../style/styles";
 
-export const NoteFiles = (props: { files: image[] }) => {
+export const NoteFiles = (props: { files?: image[] }) => {
 	const mainStyle = getAppTheme();
 	const invertedText = {
 		backgroundColor: "rgba(0,0,0,0)",
@@ -12,7 +12,7 @@ export const NoteFiles = (props: { files: image[] }) => {
 		borderColor: mainStyle.color,
 	};
 
-	return props.files.length ? (
+	return props.files?.length ? (
 		<View style={[{ flex: 1, marginTop: 8, flexDirection: "row", alignItems: "center" }, invertedText]}>
 			<Icon
 				name={"file"}

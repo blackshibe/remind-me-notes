@@ -7,33 +7,35 @@ import { FIREBASE_AUTH, FIREBASE_DATABASE, readUserData, setUserData } from "./f
 
 type wrap<T> = { payload: T; type: string };
 
-export type note = {
+interface baseNoteProperties {
 	header: string;
 	text: string;
 	id: number;
-	selected?: boolean;
 	session_id: number;
-	files: image[];
-};
+
+	selected?: boolean;
+	pinned_image?: number;
+	files?: image[];
+}
+
+export interface reminder extends baseNoteProperties {
+	type: "reminder";
+	due_time: number;
+	notification_id: string;
+	session_id: number;
+}
+
+export interface note extends baseNoteProperties {
+	type: "note";
+}
+
+type noteArray = reminder | note;
 
 export type image = {
 	uri: string;
 	id: number;
 	width: number;
 	height: number;
-};
-
-export type reminder = {
-	// useless
-	header: string;
-
-	due_time: number;
-	text: string;
-	notification_id: string;
-	session_id: number;
-	id: number;
-	selected?: boolean;
-	files: image[];
 };
 
 type noteEdit = {
@@ -51,11 +53,9 @@ export const enum timeFormat {
 }
 
 export type AppStoreState = {
-	notes?: note[];
-	reminders?: reminder[];
+	notes?: noteArray[];
 
 	next_note_id: number;
-	next_reminder_id: number;
 	next_file_id: number;
 
 	theme?: "light" | "dark";
@@ -78,7 +78,7 @@ export type AppStoreState = {
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v36.json`;
+const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v37.json`;
 
 let overwriteInitialState: AppStoreState | undefined = undefined;
 const INITIAL_STATE = (): AppStoreState => {
@@ -86,7 +86,6 @@ const INITIAL_STATE = (): AppStoreState => {
 	return {
 		time_format: timeFormat.twentyfour,
 		next_note_id: 1,
-		next_reminder_id: 1,
 		next_file_id: 1,
 		session_id: 1,
 		operation_id: 1,
@@ -109,52 +108,38 @@ let todosSlice = createSlice({
 			state.selected_note = action.payload;
 		},
 
-		attachFileToNote(
+		attachFile(
 			state: AppStoreState,
 			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
 		) {
 			let note = state.notes?.find((value) => value.id === action.payload.id);
-			if (note)
+			if (note) {
+				if (!note.files) note.files = [];
 				note.files.push({
 					id: state.next_file_id,
 					uri: action.payload.file.uri,
 					height: action.payload.file.height,
 					width: action.payload.file.width,
 				});
+			}
 
 			state.next_file_id += 1;
 		},
 
-		attachFileToReminder(
-			state: AppStoreState,
-			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
-		) {
-			let note = state.reminders?.find((value) => value.id === action.payload.id);
-			if (note)
-				note.files.push({
-					id: state.next_file_id,
-					uri: action.payload.file.uri,
-					height: action.payload.file.height,
-					width: action.payload.file.width,
-				});
-
-			state.operation_id += 1;
-			state.next_file_id += 1;
-		},
-
-		deleteFileFromNote(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
+		deleteFile(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
 			let note = state.notes?.find((value) => value.id === action.payload.note_id);
-			if (note) note.files = note.files.filter((value) => action.payload.file_id != value.id);
+			if (note?.files) note.files = note.files.filter((value) => action.payload.file_id != value.id);
 		},
 
-		deleteFileFromReminder(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
-			let note = state.reminders?.find((value) => value.id === action.payload.note_id);
-			if (note) note.files = note.files.filter((value) => action.payload.file_id != value.id);
+		pinFile(state: AppStoreState, action: wrap<{ note_id: number; file_id: number | undefined }>) {
+			let note = state.notes?.find((value) => value.id === action.payload.note_id);
+			if (note) note.pinned_image = action.payload.file_id;
 		},
 
 		addNote(state: AppStoreState, action: wrap<{ text: string; header: string }>) {
 			if (!state.notes) state.notes = [];
 			state.notes.push({
+				type: "note",
 				text: action.payload.text,
 				header: action.payload.header,
 				id: state.next_note_id,
@@ -167,19 +152,20 @@ let todosSlice = createSlice({
 			state.store_initialized = true;
 		},
 		addReminder(state: AppStoreState, action: wrap<{ text: string; notification_id: string; date: number }>) {
-			if (!state.reminders) state.reminders = [];
-			state.reminders.push({
+			if (!state.notes) state.notes = [];
+			state.notes.push({
+				type: "reminder",
 				header: "Reminder",
 				notification_id: action.payload.notification_id,
-				due_time: action.payload.date, // new Date().getTime() + 60 * 60 * 1000,
+				due_time: action.payload.date,
 				text: action.payload.text,
-				id: state.next_reminder_id,
+				id: state.next_note_id,
 				session_id: state.session_id,
 				files: [],
 			});
 
 			state.operation_id += 1;
-			state.next_reminder_id += 1;
+			state.next_note_id += 1;
 			state.store_initialized = true;
 		},
 
@@ -187,27 +173,23 @@ let todosSlice = createSlice({
 			let note = state.notes?.find((value) => value.id === action.payload);
 			if (note) note.selected = !note.selected;
 		},
-		selectReminder(state: AppStoreState, action: wrap<number>) {
-			let reminder = state.reminders?.find((value) => value.id === action.payload);
-			if (reminder) reminder.selected = !reminder.selected;
-		},
+
 		pickReminderDate(state: AppStoreState, action: wrap<selectedDate | undefined>) {
 			state.selected_date = action.payload;
 		},
 		setReminderDate(state: AppStoreState, action: wrap<[selectedDate, number]>) {
-			let reminder = state.reminders?.find((value) => value.id === action.payload[0].id);
-			if (reminder) reminder.due_time = action.payload[1];
+			let reminder = state.notes?.find((value) => value.id === action.payload[0].id);
+			if (reminder && reminder.type === "reminder") {
+				reminder.due_time = action.payload[1];
+			}
 		},
 		setReminderNotificationId(state: AppStoreState, action: wrap<[number, string]>) {
-			let reminder = state.reminders?.find((value) => value.id === action.payload[0]);
-			if (reminder) reminder.notification_id = action.payload[1];
+			let reminder = state.notes?.find((value) => value.id === action.payload[0]);
+			if (reminder && reminder.type === "reminder") reminder.notification_id = action.payload[1];
 		},
 
 		deleteNote(state: AppStoreState, action: wrap<number>) {
 			state.notes = state.notes?.filter((value) => action.payload != value.id);
-		},
-		deleteReminder(state: AppStoreState, action: wrap<number>) {
-			state.reminders = state.reminders?.filter((value) => action.payload != value.id);
 		},
 
 		editNote(state: AppStoreState, action: wrap<noteEdit>) {
@@ -222,7 +204,7 @@ let todosSlice = createSlice({
 			}
 		},
 		editReminder(state: AppStoreState, action: wrap<noteEdit>) {
-			let note = state.reminders?.find((value) => value.id === action.payload.id);
+			let note = state.notes?.find((value) => value.id === action.payload.id);
 			if (note) {
 				let new_content = action.payload.text;
 				if (new_content !== undefined) note.text = new_content;
@@ -278,15 +260,11 @@ export const {
 	editNote,
 	addReminder,
 	editReminder,
-	deleteReminder,
-	selectReminder,
 	setReminderDate,
 	setTheme,
-	deleteFileFromNote,
-	deleteFileFromReminder,
+	deleteFile,
 	pickReminderDate,
-	attachFileToNote,
-	attachFileToReminder,
+	attachFile,
 	setReminderNotificationId,
 	setTimeFormat,
 	openImage,
@@ -296,6 +274,7 @@ export const {
 	setSyncConflict,
 	updateLastModified,
 	reset,
+	pinFile,
 } = todosSlice.actions;
 export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)

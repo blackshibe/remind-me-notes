@@ -9,13 +9,16 @@ import { AppStore, AppStoreState, overwriteUserData, setSyncConflict, storeFirst
 import { View, Text } from "../style/customComponents";
 import getAppTheme, { styles } from "../style/styles";
 import { ensureNoSerializables } from "../util/ensureNoSerializables";
-import { getConvenientTime } from "../util/getConvenientTime";
+import { getConvenientDate, getConvenientTime } from "../util/getConvenientTime";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { updateNotifications } from "../util/updateNotification";
 
 export default function Intro(props: {}) {
 	const mainStyle = getAppTheme();
 	const store = useStore<AppStoreState>();
+
+	const notes = useSelector((state: AppStoreState) => state.notes);
+	const reminders = useSelector((state: AppStoreState) => state.reminders);
 
 	const conflict = useSelector((state: AppStoreState) => state.conflict);
 	const last_modified = useSelector((state: AppStoreState) => state.last_modified);
@@ -43,20 +46,29 @@ export default function Intro(props: {}) {
 			<View style={{ width: "90%" }}>
 				<Text style={styles.header}>Cloud data exists</Text>
 
-				<Text style={{ marginBottom: 10 }}>
+				<Text style={{ marginBottom: 20 }}>
 					There's app data stored in the cloud. What do you want to do with it?
 				</Text>
-				<Text style={{ marginBottom: 10 }}>
-					Whichever option you choose, your current store state will be backed up.
-				</Text>
 
-				<Text>{getConvenientTime(timeFormat.twentyfour, new Date(conflict_last_modified || 0))}</Text>
-				<Text>{getConvenientTime(timeFormat.twentyfour, new Date(last_modified))}</Text>
+				<View
+					style={{
+						marginBottom: 10,
+						padding: 10,
+						borderRadius: 8,
+						borderColor: mainStyle.color,
+						borderWidth: 1,
+					}}
+				>
+					<View style={{ margin: 5 }}>
+						<Text style={[styles.headerSmall]}>Cloud data</Text>
+						<Text>
+							Last modified date: {new Date(conflict_last_modified || 0).toDateString()}{" "}
+							{getConvenientTime(timeFormat.twentyfour, new Date(conflict_last_modified || 0))}
+						</Text>
+						<Text>Notes: {conflict.notes?.length || "None"}</Text>
+						<Text>Reminders: {conflict.reminders?.length || "None"}</Text>
+					</View>
 
-				<Text>{(conflict_last_modified || 0) / 1000}</Text>
-				<Text>{last_modified / 1000}</Text>
-
-				<View style={{ paddingTop: 25 }}>
 					<IntroButton
 						press={() => {
 							quickWarnAlert(
@@ -72,8 +84,29 @@ export default function Intro(props: {}) {
 								"Confirm"
 							);
 						}}
-						text="Use Cloud data"
+						text="Load"
 					/>
+				</View>
+
+				<View
+					style={{
+						padding: 10,
+						borderRadius: 8,
+						borderColor: mainStyle.color,
+						borderWidth: 1,
+					}}
+				>
+					<View style={{ margin: 5 }}>
+						<Text style={[styles.headerSmall]}>Local data</Text>
+						<Text>
+							Last modified date: {new Date(last_modified).toDateString()}{" "}
+							{getConvenientTime(timeFormat.twentyfour, new Date(last_modified))}
+						</Text>
+
+						<Text>Notes: {notes?.length || "None"}</Text>
+						<Text>Reminders: {reminders?.length || "None"}</Text>
+					</View>
+
 					<IntroButton
 						press={() => {
 							quickWarnAlert(
@@ -86,7 +119,7 @@ export default function Intro(props: {}) {
 								"Confirm"
 							);
 						}}
-						text="Use Local data"
+						text="Load"
 					/>
 				</View>
 			</View>

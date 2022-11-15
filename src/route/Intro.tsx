@@ -36,45 +36,42 @@ export default function Intro(props: {}) {
 		>
 			<View style={{ width: "90%" }}>
 				<Text style={styles.header}>Remind Me</Text>
-				<Text style={[styles.headerSmall, { marginBottom: 30 }]}>bruh..... the fuck is this shit???</Text>
+				<Text style={[styles.headerSmall, { marginBottom: 30 }]}>Convenient notes</Text>
 
-				<Image style={{ height: "40%", resizeMode: "center", width: "100%" }} source={funny} />
-
-				<Text style={{ marginBottom: 10 }}>
-					Remind me is an app where you can watch your favourite cat videos. We also sell illegal firearms
-					here.
-				</Text>
-				<Text>You can back up your data with an online account, or simply use the app offline.</Text>
-
-				<View style={{ paddingTop: 25 }}>
-					{!user ? (
-						<IntroButton press={() => navigator.navigate("Login")} text="Login / Register" />
-					) : (
-						<IntroButton
-							press={() => {
-								store.dispatch(storeFirstVisit(true));
-							}}
-							text="Continue"
-						/>
-					)}
-
-					{!user ? (
-						<IntroButton
-							press={() => {
-								store.dispatch(storeFirstVisit(true));
-							}}
-							text="Use the app offline"
-						/>
-					) : (
-						<IntroButton
-							press={() => {
-								store.dispatch(storeFirstVisit(true));
-								FIREBASE_AUTH.signOut();
-							}}
-							text="Log out"
-						/>
-					)}
+				<View style={{ margin: 5, marginBottom: 20 }}>
+					<Text style={{ marginBottom: 10 }}>
+						Remind me is an open-source app that lets you easily create notes and reminders in one place.
+					</Text>
+					<Text>You can back up your data with an online account, or simply use the app offline.</Text>
 				</View>
+
+				{!user ? (
+					<IntroButton press={() => navigator.navigate("Login")} text="Login / Register" />
+				) : (
+					<IntroButton
+						press={() => {
+							store.dispatch(storeFirstVisit(true));
+						}}
+						text="Continue"
+					/>
+				)}
+
+				{!user ? (
+					<IntroButton
+						press={() => {
+							store.dispatch(storeFirstVisit(true));
+						}}
+						text="Use the app offline"
+					/>
+				) : (
+					<IntroButton
+						press={() => {
+							store.dispatch(storeFirstVisit(true));
+							FIREBASE_AUTH.signOut();
+						}}
+						text="Log out"
+					/>
+				)}
 			</View>
 		</View>
 	);
