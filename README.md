@@ -49,10 +49,10 @@ create a file called `secrets.json` in `src/env` with the following information:
 
 ## todo
 
--   images over firebase
--   aspect ratio on images in notes
--   better image pinning
+-   design images over firebase
+-   design better image pinning
 -   reset pinned image when it's deleted
+-   aspect ratio on images in notes
 
 ## testing
 
