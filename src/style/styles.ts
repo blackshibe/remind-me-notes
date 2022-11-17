@@ -7,7 +7,7 @@ export const ACCENT = "#FF5550";
 export const SELECT = "#FF0550";
 
 const DARK_COLOR = "rgba(1,1,1, 1)";
-const LIGHT_COLOR = "rgba(255, 237, 227, 1)";
+const LIGHT_COLOR = "rgba(255, 255, 255, 1)";
 
 export default function getAppTheme() {
 	const { mode, setMode } = useThemeMode();

@@ -48,14 +48,10 @@ export const readUserData = async () => {
 
 	// firebase deletes empty values because fuck you
 	if (!fixed_cloud_state.notes) fixed_cloud_state.notes = [];
-	if (!fixed_cloud_state.reminders) fixed_cloud_state.reminders = [];
 
 	// and also firebase turns arrays into objects because fuck you
 	fixed_cloud_state.notes = fixArray(fixed_cloud_state.notes);
-	fixed_cloud_state.reminders = fixArray(fixed_cloud_state.reminders);
-
-	fixed_cloud_state.notes.forEach((element) => (element.files = fixArray(element.files)));
-	fixed_cloud_state.reminders.forEach((element) => (element.files = fixArray(element.files)));
+	fixed_cloud_state.notes.forEach((element) => (element.files = fixArray(element.files || [])));
 
 	return fixed_cloud_state;
 };

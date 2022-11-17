@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, pickReminderDate, setReminderDate } from "../store";
+import { AppStoreState, pickReminderDate, reminder, setReminderDate } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import { Header } from "../component/Header";
 import RNDateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -13,20 +13,20 @@ const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 
 export default function PickReminderDate(props: { navigation: any }) {
 	const mainStyle = getAppTheme();
-	const reminders = useSelector((state: AppStoreState) => state.reminders);
+	const notes = useSelector((state: AppStoreState) => state.notes);
 	const selected_date = useSelector((state: AppStoreState) => state.selected_date)!;
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
 
-	const selectedReminder = reminders?.find((value) => value.id === selected_date?.id);
+	const selected = notes?.find((value) => value.id === selected_date?.id && value.type === "reminder") as reminder;
 	const [selectingTime, selectTime] = useState<"none" | "date" | "time">("none");
 	const store = useStore<AppStoreState>();
-	const dueDate = new Date(selectedReminder?.due_time || 0);
+	const dueDate = new Date(selected?.due_time || 0);
 
 	useBackButton(props.navigation, () => store.dispatch(pickReminderDate()));
 
 	const setDate = (date: DateTimePickerEvent) => {
-		if (date.type === "set" && date.nativeEvent.timestamp && selectedReminder) {
-			updateNotification(store, selectedReminder);
+		if (date.type === "set" && date.nativeEvent.timestamp && selected) {
+			updateNotification(store, selected);
 			store.dispatch(setReminderDate([selected_date, date.nativeEvent.timestamp]));
 		}
 		selectTime("none");

@@ -280,6 +280,13 @@ export async function createStore() {
 	await FileSystem.readAsStringAsync(STORAGE_LOCATION)
 		.then((value) => {
 			overwriteInitialState = JSON.parse(value);
+
+			if (overwriteInitialState) {
+				// non serializable fields
+				delete overwriteInitialState.selected_note;
+				delete overwriteInitialState.selected_image;
+				delete overwriteInitialState.selected_date;
+			}
 		})
 		.catch(console.log);
 
@@ -298,18 +305,11 @@ export async function createStore() {
 	const saveLoop = () => {
 		if (storeDirty) {
 			// juust in case
-			let storeState = store.getState();
+			let saveState = store.getState();
+			delete saveState.conflict;
 
-			// non serializable fields
-			delete storeState.selected_note;
-			delete storeState.selected_image;
-			delete storeState.selected_date;
-			delete storeState.conflict;
-
-			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));
-
-			if (FIREBASE_AUTH.currentUser && !storeState.conflict && storeState.store_initialized)
-				setUserData(storeState);
+			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(saveState));
+			if (FIREBASE_AUTH.currentUser && !saveState.conflict && saveState.store_initialized) setUserData(saveState);
 
 			store.dispatch(updateLastModified());
 			storeDirty = false;

@@ -37,15 +37,7 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 					}}
 				>
 					<BottomBarButton
-						style={{ margin: 0 }}
-						onclick={() => {
-							store.dispatch(pinFile({ file_id: data.id, note_id }));
-							setSelected(false);
-						}}
-						name={"star"}
-					/>
-					<BottomBarButton
-						style={{ margin: 0, marginBottom: 4, marginTop: 4 }}
+						style={{ margin: 0, marginBottom: 4 }}
 						onclick={() =>
 							quickWarnAlert(() => {
 								store.dispatch(deleteFile({ file_id: data.id, note_id }));
@@ -53,7 +45,11 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 						}
 						name={"trash"}
 					/>
-					<BottomBarButton style={{ margin: 0 }} onclick={() => setSelected(false)} name={"undo"} />
+					<BottomBarButton
+						style={{ margin: 0, marginTop: 4 }}
+						onclick={() => setSelected(false)}
+						name={"undo"}
+					/>
 				</View>
 			) : (
 				<Animated.View

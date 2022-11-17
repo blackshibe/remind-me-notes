@@ -51,6 +51,7 @@ export default function Route(props: props) {
 
 	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
+		console.log("Restorign app with selected:", selectedDate, selectedImage, selectedNote);
 		if (!dummyInitialized) props.navigation.navigate("Intro");
 		if (selectedNote) props.navigation.navigate("Note");
 		if (selectedDate) props.navigation.navigate("PickReminderDate");

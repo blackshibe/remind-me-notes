@@ -40,7 +40,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 		};
 	});
 
-	let truncatedText = element.text.length > 70 ? `${element.text.substring(1, 70)}...` : element.text;
+	let truncatedText = element.text.length > 70 ? `${element.text.substring(0, 120)}...` : element.text;
 
 	return (
 		<Animated.View
@@ -83,7 +83,8 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 							style={[
 								{
 									width: "100%",
-									height: 160,
+									height: 120,
+									resizeMode: "contain",
 									borderBottomLeftRadius: 16,
 									borderBottomRightRadius: 16,
 									borderWidth: 1,

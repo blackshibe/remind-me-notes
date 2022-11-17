@@ -24,6 +24,8 @@ import { TouchableOpacity, View, Text, TextInput } from "../style/customComponen
 import ImageZoom from "react-native-image-pan-zoom";
 import { useNavigation } from "@react-navigation/native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { Button } from "@rneui/themed";
+import { ImageView } from "../component/ImageView";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -79,29 +81,15 @@ export default function EditNote(props: editNoteProps) {
 
 	return (
 		<View style={styles.pageContainer}>
-			{selectedImage ? (
-				<ImageZoom
-					// @ts-ignore typescript is wrong here again
-					style={[mainStyle, { width: "100%", height: "100%" }]}
-					cropWidth={Dimensions.get("window").width}
-					cropHeight={Dimensions.get("window").height}
-					imageWidth={Dimensions.get("window").width}
-					imageHeight={Dimensions.get("window").height}
-				>
-					<Animated.Image
-						entering={FadeIn}
-						exiting={FadeOut}
-						style={{
-							width: Dimensions.get("window").width,
-							height: Dimensions.get("window").height,
-							resizeMode: "contain",
-						}}
-						source={{
-							uri: selectedImage.uri,
-						}}
-					/>
-				</ImageZoom>
-			) : undefined}
+			{selectedImage && (
+				<ImageView
+					note_id={selectedNote.id}
+					unselect={() => {
+						store.dispatch(openImage());
+					}}
+					selectedImage={selectedImage}
+				/>
+			)}
 			<View style={{ flex: 1, width: "100%", marginTop: 8 }}>
 				<View style={[{ margin: 4, padding: 8, flex: 1 }]}>
 					{selectedNote.type === "note" ? (
