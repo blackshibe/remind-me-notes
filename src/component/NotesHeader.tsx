@@ -1,6 +1,6 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
-import getAppTheme, { ACCENT } from "../style/styles";
+import getAppTheme, { ACCENT, SELECT } from "../style/styles";
 import { useSelector, useStore } from "react-redux";
 import { addNote, AppStoreState, deleteNote } from "../store";
 import { Icon } from "@rneui/themed";
@@ -45,7 +45,7 @@ export const Header = (props: { route: { name?: string } }): JSX.Element => {
 					)}
 					{isSelecting && (
 						<Animated.View exiting={FadeOut} entering={FadeIn}>
-							<Icon name={"delete"} size={32} color={ACCENT} />
+							<Icon name={"delete"} size={32} color={SELECT} />
 						</Animated.View>
 					)}
 				</TouchableOpacity>

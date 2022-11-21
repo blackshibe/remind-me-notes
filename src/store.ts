@@ -2,6 +2,7 @@ import { AnyAction, configureStore, createSlice, EnhancedStore, Reducer, ThunkMi
 import * as FileSystem from "expo-file-system";
 import { UserCredential } from "firebase/auth";
 import { ref, set } from "firebase/database";
+import { type } from "os";
 import { AppState, AppStateStatus } from "react-native";
 import { FIREBASE_AUTH, FIREBASE_DATABASE, readUserData, setUserData } from "./firebase";
 
@@ -31,12 +32,36 @@ export interface note extends baseNoteProperties {
 
 type noteArray = reminder | note;
 
-export type image = {
-	uri: string;
-	id: number;
-	width: number;
-	height: number;
-};
+export const enum imageType {
+	local,
+	uploading,
+	cloud,
+}
+
+export type image =
+	| {
+			type: imageType;
+			uri: string;
+			id: number;
+			width: number;
+			height: number;
+	  }
+	| {
+			type: imageType.uploading;
+			uri: string;
+			cloud_handle: string;
+			id: number;
+			width: number;
+			height: number;
+	  }
+	| {
+			type: imageType.cloud;
+			uri: string;
+			cloud_handle: string;
+			id: number;
+			width: number;
+			height: number;
+	  };
 
 type noteEdit = {
 	id: number;
@@ -116,11 +141,59 @@ let todosSlice = createSlice({
 			if (note) {
 				if (!note.files) note.files = [];
 				note.files.push({
+					type: imageType.local,
 					id: state.next_file_id,
 					uri: action.payload.file.uri,
 					height: action.payload.file.height,
 					width: action.payload.file.width,
 				});
+			}
+
+			state.next_file_id += 1;
+		},
+
+		beginFileUpload(
+			state: AppStoreState,
+			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
+		) {
+			let note = state.notes?.find((value) => value.id === action.payload.id);
+			if (note) {
+				if (!note.files) note.files = [];
+				note.files.push({
+					type: imageType.uploading,
+					id: state.next_file_id,
+					uri: action.payload.file.uri,
+					height: action.payload.file.height,
+					width: action.payload.file.width,
+				});
+			}
+
+			state.next_file_id += 1;
+		},
+
+		finishFileUpload(
+			state: AppStoreState,
+			action: wrap<{
+				file: { cloud_handle: string; uri: string; height: number; width: number };
+				id: number;
+				file_id: number;
+			}>
+		) {
+			let note = state.notes?.find((value) => value.id === action.payload.id);
+			if (note && note.files) {
+				let file = note.files.find((value) => value.id === action.payload.file_id);
+				let index = note.files.findIndex((value) => value.id === action.payload.file_id);
+
+				if (file) {
+					note.files[index] = {
+						type: imageType.cloud,
+						cloud_handle: action.payload.file.cloud_handle,
+						uri: action.payload.file.uri,
+						id: state.next_file_id,
+						height: action.payload.file.height,
+						width: action.payload.file.width,
+					};
+				}
 			}
 
 			state.next_file_id += 1;
@@ -266,6 +339,8 @@ export const {
 	pickReminderDate,
 	attachFile,
 	setReminderNotificationId,
+	finishFileUpload,
+	beginFileUpload,
 	setTimeFormat,
 	openImage,
 	storeFirstVisit,

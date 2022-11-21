@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 export const SPRING_PROPERTIES = { stiffness: 1000, damping: 1000 };
-export const ACCENT = "#FF5550";
+export const ACCENT = "#555550";
 export const SELECT = "#FF0550";
 
 const DARK_COLOR = "rgba(1,1,1, 1)";

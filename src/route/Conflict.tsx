@@ -18,8 +18,6 @@ export default function Intro(props: {}) {
 	const store = useStore<AppStoreState>();
 
 	const notes = useSelector((state: AppStoreState) => state.notes);
-	const reminders = useSelector((state: AppStoreState) => state.reminders);
-
 	const conflict = useSelector((state: AppStoreState) => state.conflict);
 	const last_modified = useSelector((state: AppStoreState) => state.last_modified);
 
@@ -65,8 +63,10 @@ export default function Intro(props: {}) {
 							Last modified date: {new Date(conflict_last_modified || 0).toDateString()}{" "}
 							{getConvenientTime(timeFormat.twentyfour, new Date(conflict_last_modified || 0))}
 						</Text>
-						<Text>Notes: {conflict.notes?.length || "None"}</Text>
-						<Text>Reminders: {conflict.reminders?.length || "None"}</Text>
+						<Text>Notes: {conflict.notes?.filter((value) => value.type == "note").length || "None"}</Text>
+						<Text>
+							Reminders: {conflict.notes?.filter((value) => value.type == "reminder").length || "None"}
+						</Text>
 					</View>
 
 					<IntroButton
@@ -103,8 +103,8 @@ export default function Intro(props: {}) {
 							{getConvenientTime(timeFormat.twentyfour, new Date(last_modified))}
 						</Text>
 
-						<Text>Notes: {notes?.length || "None"}</Text>
-						<Text>Reminders: {reminders?.length || "None"}</Text>
+						<Text>Notes: {notes?.filter((value) => value.type == "note").length || "None"}</Text>
+						<Text>Reminders: {notes?.filter((value) => value.type == "reminder").length || "None"}</Text>
 					</View>
 
 					<IntroButton

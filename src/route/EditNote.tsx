@@ -11,6 +11,8 @@ import {
 	pinFile,
 	reminder,
 	selectNote,
+	beginFileUpload,
+	finishFileUpload,
 } from "../store";
 import getAppTheme, { styles } from "../style/styles";
 import * as ImagePicker from "expo-image-picker";
@@ -21,17 +23,24 @@ import { BottomBarButton } from "../component/BottomBarButton";
 import { FileSample } from "../component/FileSample";
 import { Dimensions, FlatList } from "react-native";
 import { TouchableOpacity, View, Text, TextInput } from "../style/customComponents";
-import ImageZoom from "react-native-image-pan-zoom";
 import { useNavigation } from "@react-navigation/native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { Button } from "@rneui/themed";
 import { ImageView } from "../component/ImageView";
+import { FIREBASE_AUTH, FIREBASE_STORAGE } from "../firebase";
+import { ref, uploadBytes, uploadString } from "firebase/storage";
+import * as FileSystem from "expo-file-system";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 type editNoteProps =
 	| { selected_id: number; type: "reminder"; navigation: any }
 	| { selected_id: number; type: "note"; navigation: any };
+
+function uuid() {
+	return "xxxx-xxxx-xxx-xxxx".replace(/[x]/g, (c) => {
+		const r = Math.floor(Math.random() * 16);
+		return r.toString(16);
+	});
+}
 
 export default function EditNote(props: editNoteProps) {
 	const mainStyle = getAppTheme();
@@ -182,17 +191,58 @@ export default function EditNote(props: editNoteProps) {
 					onclick={async () => {
 						let result = await ImagePicker.launchImageLibraryAsync();
 						if (result.cancelled) return;
+						if (result.type === "video") return;
 
-						store.dispatch(
-							attachFile({
-								id: selectedNote.id,
-								file: {
-									uri: result.uri,
-									height: result.height,
-									width: result.width,
-								},
-							})
-						);
+						if (FIREBASE_AUTH.currentUser) {
+							console.log("uploading image to cloud");
+							const name = `images/${uuid()}-${uuid()}-${result.fileName || "unknown"}`;
+							const imageRef = ref(FIREBASE_STORAGE, name);
+							console.log(name);
+
+							let file_id = store.getState().next_file_id;
+							let file = {
+								uri: result.uri,
+								height: result.height,
+								width: result.width,
+							};
+
+							store.dispatch(
+								beginFileUpload({
+									id: selectedNote.id,
+									file,
+								})
+							);
+
+							FileSystem.readAsStringAsync(result.uri).then((element) => {
+								uploadString(imageRef, element).then((snapshot) => {
+									console.log("Uploaded a blob or file!");
+
+									store.dispatch(
+										finishFileUpload({
+											id: selectedNote.id,
+											file_id,
+											file: {
+												cloud_handle: name,
+												uri: file.uri,
+												height: file.height,
+												width: file.width,
+											},
+										})
+									);
+								});
+							});
+						} else {
+							store.dispatch(
+								attachFile({
+									id: selectedNote.id,
+									file: {
+										uri: result.uri,
+										height: result.height,
+										width: result.width,
+									},
+								})
+							);
+						}
 					}}
 					name={"image"}
 				/>

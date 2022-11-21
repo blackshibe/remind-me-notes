@@ -5,7 +5,7 @@ import { useSelector, useStore } from "react-redux";
 import { addReminder, addNote, AppStoreState, deleteNote } from "../store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import getAppTheme, { ACCENT } from "../style/styles";
+import getAppTheme, { ACCENT, SELECT } from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { View } from "../style/customComponents";
 import * as Notifications from "expo-notifications";
@@ -62,7 +62,7 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 					)}
 					{isSelecting && (
 						<Animated.View exiting={FadeOut} entering={FadeIn}>
-							<Icon name={"delete"} size={32} color={ACCENT} />
+							<Icon name={"delete"} size={32} color={SELECT} />
 						</Animated.View>
 					)}
 				</TouchableOpacity>

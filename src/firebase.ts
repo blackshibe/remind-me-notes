@@ -1,9 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { get, getDatabase, ref, set } from "firebase/database";
-import SECRETS from "./SECRETS.json";
 import { AppStore, AppStoreState } from "./store";
 import { ensureNoSerializables } from "./util/ensureNoSerializables";
+import { getStorage } from "firebase/storage";
+import { SECRETS } from "./secrets";
 
 const firebaseConfig = {
 	apiKey: SECRETS.FIREBASE_API_KEY,
@@ -22,6 +23,7 @@ const app = initializeApp(firebaseConfig);
 export const FIREBASE_DATABASE = getDatabase(app);
 export const FIREBASE_AUTH = getAuth(app);
 export const FIREBASE_APP = initializeApp(firebaseConfig);
+export const FIREBASE_STORAGE = getStorage(app);
 
 FIREBASE_AUTH.onAuthStateChanged((value) => console.log(`auth state changed: ${value?.email}`));
 

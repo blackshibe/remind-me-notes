@@ -4,10 +4,11 @@ import ImageZoom from "react-native-image-pan-zoom";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, deleteFile, image, pinFile } from "../store";
-import { View } from "../style/customComponents";
+import { Text, View } from "../style/customComponents";
 import getAppTheme from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { BottomBarButton } from "./BottomBarButton";
+import { GalleryButton } from "./GalleryButton";
 
 export const ImageView = ({
 	selectedImage,
@@ -48,6 +49,20 @@ export const ImageView = ({
 					}}
 				/>
 			</ImageZoom>
+			{/* <View
+				style={{
+					position: "absolute",
+					display: "flex",
+					width: "100%",
+					top: 24,
+					paddingRight: 16,
+					paddingLeft: 16,
+					backgroundColor: "rgba(0,0,0,0)",
+				}}
+			>
+				<Text>unknown.png</Text>
+				<Text>added 24pm</Text>
+			</View> */}
 			<View
 				style={{
 					position: "absolute",
@@ -62,7 +77,7 @@ export const ImageView = ({
 					flexDirection: "row",
 				}}
 			>
-				<BottomBarButton
+				<GalleryButton
 					onclick={() => {
 						if (isPinned) {
 							store.dispatch(
@@ -83,7 +98,7 @@ export const ImageView = ({
 					name={isPinned ? "star-half" : "star"}
 				/>
 
-				<BottomBarButton
+				<GalleryButton
 					onclick={() =>
 						quickWarnAlert(() => {
 							store.dispatch(deleteFile({ file_id: selectedImage.id, note_id }));

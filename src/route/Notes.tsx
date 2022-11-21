@@ -33,14 +33,17 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 		borderColor: mainStyle.color,
 	};
 
+	let truncatedText = element.text.length > 70 ? `${element.text.substring(0, 120)}...` : element.text;
+	let pinnedImage = element.files?.find((value) => value.id === element.pinned_image);
+	let fullscreenImage = pinnedImage && !element.header && !element.text;
+
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
 			backgroundColor: element.selected ? SELECT : mainStyle.color,
 			borderColor: element.selected ? SELECT : mainStyle.color,
+			borderWidth: element.selected ? (fullscreenImage ? 1 : 0) : undefined,
 		};
 	});
-
-	let truncatedText = element.text.length > 70 ? `${element.text.substring(0, 120)}...` : element.text;
 
 	return (
 		<Animated.View
@@ -62,38 +65,40 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 					store.dispatch(selectNote(element.id));
 				}}
 			>
-				<View style={[styles.note, invertedColor, animatedSelection]}>
-					<View
-						style={{
-							padding: 16,
-							backgroundColor: "rgba(0,0,0,0)",
-						}}
-					>
-						{element.header ? (
-							<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
-						) : undefined}
-						{truncatedText ? <Text style={[invertedColor]}>{truncatedText}</Text> : undefined}
-						{!element.pinned_image && <NoteFiles files={element.files} />}
-					</View>
-
-					{element.pinned_image && (
+				<Animated.View style={[styles.note, invertedColor, animatedSelection]}>
+					{!fullscreenImage && (
+						<View
+							style={{
+								padding: 16,
+								backgroundColor: "rgba(0,0,0,0)",
+							}}
+						>
+							{element.header ? (
+								<Text style={[styles.headerSmall, invertedColor]}>{element.header}</Text>
+							) : undefined}
+							{truncatedText ? <Text style={[invertedColor]}>{truncatedText}</Text> : undefined}
+							{!pinnedImage && <NoteFiles files={element.files} />}
+						</View>
+					)}
+					{pinnedImage && (
 						<Animated.Image
 							entering={FadeIn}
-							source={{ uri: element.files?.find((value) => value.id === element.pinned_image)?.uri }}
+							source={{ uri: pinnedImage.uri }}
 							style={[
 								{
 									width: "100%",
-									height: 120,
+
+									aspectRatio: Math.max(pinnedImage.width / pinnedImage.height, 0.75),
 									resizeMode: "contain",
 									borderBottomLeftRadius: 16,
 									borderBottomRightRadius: 16,
-									borderWidth: 1,
+									borderRadius: fullscreenImage ? 16 : undefined,
 								},
 								animatedSelection,
 							]}
 						/>
 					)}
-				</View>
+				</Animated.View>
 			</TouchableOpacity>
 		</Animated.View>
 	);

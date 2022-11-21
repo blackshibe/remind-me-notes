@@ -46,10 +46,12 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
-			backgroundColor: element.selected ? SELECT : mainStyle.color,
-			borderColor: element.selected ? SELECT : mainStyle.color,
+			backgroundColor: element.selected ? SELECT : dueStyle?.backgroundColor || mainStyle.color,
+			borderColor: element.selected ? SELECT : dueStyle?.backgroundColor || mainStyle.color,
 		};
 	});
+
+	let pinnedImage = element.files?.find((value) => value.id === element.pinned_image);
 
 	return (
 		<Animated.View
@@ -82,20 +84,21 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 					>
 						{<Text style={[styles.headerSmall, invertedText]}>{element.text || "No note"}</Text>}
 						<Text style={[invertedText]}>{dueString}</Text>
-						{!element.pinned_image && <NoteFiles files={element.files} />}
+						{!pinnedImage && <NoteFiles files={element.files} />}
 					</View>
 
-					{element.pinned_image && (
+					{pinnedImage && (
 						<Animated.Image
 							entering={FadeIn}
-							source={{ uri: element.files?.find((value) => value.id === element.pinned_image)?.uri }}
+							source={{ uri: pinnedImage.uri }}
 							style={[
 								{
 									width: "100%",
-									height: 120,
+
+									aspectRatio: Math.max(pinnedImage.width / pinnedImage.height, 0.75),
+									resizeMode: "contain",
 									borderBottomLeftRadius: 16,
 									borderBottomRightRadius: 16,
-									borderWidth: 1,
 								},
 								animatedSelection,
 							]}
