@@ -11,7 +11,7 @@ import EditNoteRouter from "./route/EditNoteRouter";
 import Intro from "./route/Intro";
 import Login from "./route/Login";
 import PickReminderDate from "./route/PickReminderDate";
-import { AppStoreState } from "./store";
+import { AppStoreState } from "./module/app_store";
 import getAppTheme from "./style/styles";
 
 export type appLoginTabNavigator = {

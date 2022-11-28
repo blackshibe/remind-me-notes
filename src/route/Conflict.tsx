@@ -1,11 +1,14 @@
-import { useNavigation } from "@react-navigation/native";
-import { getAuth, signOut } from "firebase/auth";
 import React, { useEffect } from "react";
-import { Image } from "react-native";
 import { useSelector, useStore } from "react-redux";
 import { IntroButton } from "../component/IntroButton";
-import { FIREBASE_APP, FIREBASE_AUTH } from "../firebase";
-import { AppStore, AppStoreState, overwriteUserData, setSyncConflict, storeFirstVisit, timeFormat } from "../store";
+import {
+	AppStore,
+	AppStoreState,
+	overwriteUserData,
+	setSyncConflict,
+	storeFirstVisit,
+	timeFormat,
+} from "../module/app_store";
 import { View, Text } from "../style/customComponents";
 import getAppTheme, { styles } from "../style/styles";
 import { ensureNoSerializables } from "../util/ensureNoSerializables";

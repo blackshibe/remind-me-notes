@@ -13,7 +13,7 @@ import {
 	selectNote,
 	beginFileUpload,
 	finishFileUpload,
-} from "../store";
+} from "../module/app_store";
 import getAppTheme, { styles } from "../style/styles";
 import * as ImagePicker from "expo-image-picker";
 import useBackButton from "../util/useBackButton";
@@ -25,9 +25,10 @@ import { Dimensions, FlatList } from "react-native";
 import { TouchableOpacity, View, Text, TextInput } from "../style/customComponents";
 import { useNavigation } from "@react-navigation/native";
 import { ImageView } from "../component/ImageView";
-import { FIREBASE_AUTH, FIREBASE_STORAGE } from "../firebase";
 import { ref, uploadBytes, uploadString } from "firebase/storage";
 import * as FileSystem from "expo-file-system";
+import { FIREBASE_AUTH, FIREBASE_STORAGE } from "../module/firebase";
+import { upload_local_image } from "../module/local_images";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -150,7 +151,7 @@ export default function EditNote(props: editNoteProps) {
 							renderItem={({ item, index }) => {
 								return (
 									<FileSample
-										note_id={selectedNote.id}
+										noteId={selectedNote.id}
 										type={props.type}
 										full={false}
 										index={index}
@@ -178,8 +179,8 @@ export default function EditNote(props: editNoteProps) {
 						onclick={() => {
 							store.dispatch(
 								pinFile({
-									note_id: selectedNote.id,
-									file_id: undefined,
+									noteId: selectedNote.id,
+									imageName: undefined,
 								})
 							);
 						}}
@@ -189,15 +190,21 @@ export default function EditNote(props: editNoteProps) {
 
 				<BottomBarButton
 					onclick={async () => {
-						let result = await ImagePicker.launchImageLibraryAsync();
+						let result = await ImagePicker.launchImageLibraryAsync({
+							allowsEditing: true,
+							allowsMultipleSelection: false,
+							base64: true,
+						});
+
 						if (result.cancelled) return;
 						if (result.type === "video") return;
 
+						const image_uri = `images/${uuid()}-${uuid()}-${result.fileName || "unknown"}`;
+
 						if (FIREBASE_AUTH.currentUser) {
 							console.log("uploading image to cloud");
-							const name = `images/${uuid()}-${uuid()}-${result.fileName || "unknown"}`;
-							const imageRef = ref(FIREBASE_STORAGE, name);
-							console.log(name);
+							const imageRef = ref(FIREBASE_STORAGE, image_uri);
+							console.log(image_uri);
 
 							let file_id = store.getState().next_file_id;
 							let file = {
@@ -219,10 +226,9 @@ export default function EditNote(props: editNoteProps) {
 
 									store.dispatch(
 										finishFileUpload({
-											id: selectedNote.id,
-											file_id,
+											imageUri: image_uri,
+											fileId: file_id,
 											file: {
-												cloud_handle: name,
 												uri: file.uri,
 												height: file.height,
 												width: file.width,
@@ -231,17 +237,20 @@ export default function EditNote(props: editNoteProps) {
 									);
 								});
 							});
-						} else {
+						} else if (result.base64) {
+							upload_local_image(image_uri, result.base64);
 							store.dispatch(
 								attachFile({
 									id: selectedNote.id,
 									file: {
-										uri: result.uri,
+										uri: image_uri,
 										height: result.height,
 										width: result.width,
 									},
 								})
 							);
+						} else {
+							throw "failed to upload image!!!";
 						}
 					}}
 					name={"image"}

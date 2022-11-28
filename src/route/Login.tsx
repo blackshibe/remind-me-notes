@@ -5,13 +5,13 @@ import React, { useEffect, useState } from "react";
 import { TextInput } from "react-native-gesture-handler";
 import { useSelector, useStore } from "react-redux";
 import { IntroButton } from "../component/IntroButton";
-import { AppStore, AppStoreState, overwriteUserData, setSyncConflict, storeFirstVisit } from "../store";
+import { AppStore, AppStoreState, overwriteUserData, setSyncConflict, storeFirstVisit } from "../module/app_store";
 import { View, Text } from "../style/customComponents";
-import { FIREBASE_APP, FIREBASE_AUTH, readUserData } from "../firebase";
 import getAppTheme, { styles } from "../style/styles";
 import { appLoginTabNavigator } from "../LoginWrap";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { updateNotifications } from "../util/updateNotification";
+import { FIREBASE_AUTH, readUserData } from "../module/firebase";
 
 export default function Login(props: {}) {
 	const navigator = useNavigation<StackNavigationProp<appLoginTabNavigator, "Intro">>();

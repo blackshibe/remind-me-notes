@@ -46,6 +46,7 @@ FIREBASE_APP_ID= ...
 -   Option to maximize an image to a note [x]
 -   aspect ratio on images in notes [x]
 -   reset pinned image when it's deleted [X]
+-   make the app build again [x]
 
 ## todo
 
@@ -54,6 +55,10 @@ FIREBASE_APP_ID= ...
 -   syncing images to the cloud
 -   caching images locally from the cloud
     https://firebase.google.com/docs/storage/web/upload-files
+
+-   exporting your data to json
+-   deleting images carries over hook states from the previous index
+-   pinned images do not appear until the app reloads for whatever reason
 
 ## testing
 

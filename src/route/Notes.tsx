@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, TouchableOpacity, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, openNote, selectNote, AppStore, note } from "../store";
+import { AppStoreState, openNote, selectNote, AppStore, note } from "../module/app_store";
 import getAppTheme, { SELECT, styles } from "../style/styles";
 import { MasonryList } from "../component/MasonryList";
 import { Header } from "../component/NotesHeader";
 import { View, Text } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle } from "react-native-reanimated";
 import { NoteFiles } from "../component/NoteFiles";
+import { useLocalImage } from "../module/local_images";
 
 type dragInfo = { x: number; y: number; width: number; height: number; noteId: number };
 type extraItemProps = {
@@ -34,8 +35,9 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 	};
 
 	let truncatedText = element.text.length > 70 ? `${element.text.substring(0, 120)}...` : element.text;
-	let pinnedImage = element.files?.find((value) => value.id === element.pinned_image);
+	let pinnedImage = element.files?.find((value) => value.name === element.pinned_image);
 	let fullscreenImage = pinnedImage && !element.header && !element.text;
+	let uri = useLocalImage(pinnedImage?.name);
 
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
@@ -83,11 +85,10 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 					{pinnedImage && (
 						<Animated.Image
 							entering={FadeIn}
-							source={{ uri: pinnedImage.uri }}
+							source={{ uri }}
 							style={[
 								{
 									width: "100%",
-
 									aspectRatio: Math.max(pinnedImage.width / pinnedImage.height, 0.75),
 									resizeMode: "contain",
 									borderBottomLeftRadius: 16,

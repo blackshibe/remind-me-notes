@@ -1,7 +1,7 @@
 import { Icon } from "@rneui/themed";
 import React from "react";
 import { View, Text } from "../style/customComponents";
-import { image } from "../store";
+import { image } from "../module/app_store";
 import getAppTheme from "../style/styles";
 
 export const NoteFiles = (props: { files?: image[] }) => {

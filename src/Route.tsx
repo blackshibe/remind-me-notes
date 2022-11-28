@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { AppStoreState } from "./store";
+import { AppStoreState } from "./module/app_store";
 import getAppTheme, { styles } from "./style/styles";
 import Reminders from "./route/Reminders";
 import App from "./route/Notes";
@@ -51,7 +51,6 @@ export default function Route(props: props) {
 
 	// the Stack navigator is loosely tied to AppStoreState
 	useEffect(() => {
-		console.log("Restorign app with selected:", selectedDate, selectedImage, selectedNote);
 		if (!dummyInitialized) props.navigation.navigate("Intro");
 		if (selectedNote) props.navigation.navigate("Note");
 		if (selectedDate) props.navigation.navigate("PickReminderDate");

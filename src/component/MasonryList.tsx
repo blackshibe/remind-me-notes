@@ -1,5 +1,4 @@
 import React from "react";
-import { Pressable } from "react-native";
 import { View } from "../style/customComponents";
 
 type props<T, E> = {

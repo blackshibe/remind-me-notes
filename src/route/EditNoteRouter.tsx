@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { AppStoreState } from "../store";
+import { AppStoreState } from "../module/app_store";
 import EditNote from "./EditNote";
 
 // this file is mostly unnecessary now

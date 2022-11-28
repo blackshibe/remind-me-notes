@@ -3,7 +3,8 @@ import { Dimensions } from "react-native";
 import ImageZoom from "react-native-image-pan-zoom";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, deleteFile, image, pinFile } from "../store";
+import { AppStoreState, deleteFile, image, pinFile } from "../module/app_store";
+import { useLocalImage } from "../module/local_images";
 import { Text, View } from "../style/customComponents";
 import getAppTheme from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
@@ -23,8 +24,8 @@ export const ImageView = ({
 	let store = useStore();
 	let notes = useSelector((state: AppStoreState) => state.notes);
 	let note = notes?.find((value) => value.id === note_id);
-
-	let isPinned = note?.pinned_image === selectedImage.id;
+	let isPinned = note?.pinned_image === selectedImage.name;
+	let uri = useLocalImage(selectedImage.name);
 
 	return (
 		<View>
@@ -45,7 +46,7 @@ export const ImageView = ({
 						resizeMode: "contain",
 					}}
 					source={{
-						uri: selectedImage.uri,
+						uri,
 					}}
 				/>
 			</ImageZoom>
@@ -60,8 +61,8 @@ export const ImageView = ({
 					backgroundColor: "rgba(0,0,0,0)",
 				}}
 			>
-				<Text>unknown.png</Text>
-				<Text>added 24pm</Text>
+				<Text>Added on the 24th Nov 2022</Text>
+				<Text>synced to cloud</Text>
 			</View> */}
 			<View
 				style={{
@@ -82,15 +83,15 @@ export const ImageView = ({
 						if (isPinned) {
 							store.dispatch(
 								pinFile({
-									note_id: note_id,
-									file_id: undefined,
+									noteId: note_id,
+									imageName: undefined,
 								})
 							);
 						} else {
 							store.dispatch(
 								pinFile({
-									note_id: note_id,
-									file_id: selectedImage.id,
+									noteId: note_id,
+									imageName: selectedImage.name,
 								})
 							);
 						}
@@ -101,7 +102,7 @@ export const ImageView = ({
 				<GalleryButton
 					onclick={() =>
 						quickWarnAlert(() => {
-							store.dispatch(deleteFile({ file_id: selectedImage.id, note_id }));
+							store.dispatch(deleteFile({ imageName: selectedImage.name, noteId: note_id }));
 							unselect();
 						}, "Do you want to delete this file?")
 					}

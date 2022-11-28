@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ScrollView, Vibration } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, reminder, AppStore, openNote, timeFormat, note, selectNote } from "../store";
+import { AppStoreState, reminder, AppStore, openNote, timeFormat, note, selectNote } from "../module/app_store";
 import { MasonryList } from "../component/MasonryList";
 import { RemindersHeader } from "../component/RemindersHeader";
 import { datePassed, getConvenientDate, getConvenientTime, shouldDisplayTime } from "../util/getConvenientTime";
@@ -9,6 +9,7 @@ import { View, Text, TouchableOpacity } from "../style/customComponents";
 import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
 import { NoteFiles } from "../component/NoteFiles";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { useLocalImage } from "../module/local_images";
 
 const pastDue = {
 	backgroundColor: ACCENT,
@@ -51,7 +52,8 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 		};
 	});
 
-	let pinnedImage = element.files?.find((value) => value.id === element.pinned_image);
+	let pinnedImage = element.files?.find((value) => value.name === element.pinned_image);
+	let uri = useLocalImage(pinnedImage?.name);
 
 	return (
 		<Animated.View
@@ -90,7 +92,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 					{pinnedImage && (
 						<Animated.Image
 							entering={FadeIn}
-							source={{ uri: pinnedImage.uri }}
+							source={{ uri }}
 							style={[
 								{
 									width: "100%",

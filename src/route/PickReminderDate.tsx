@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, pickReminderDate, reminder, setReminderDate } from "../store";
+import { AppStoreState, pickReminderDate, reminder, setReminderDate } from "../module/app_store";
 import getAppTheme, { styles } from "../style/styles";
 import { Header } from "../component/Header";
 import RNDateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";

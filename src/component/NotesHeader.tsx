@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import getAppTheme, { ACCENT, SELECT } from "../style/styles";
 import { useSelector, useStore } from "react-redux";
-import { addNote, AppStoreState, deleteNote } from "../store";
+import { addNote, AppStoreState, deleteNote } from "../module/app_store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import quickWarnAlert from "../util/quickWarnAlert";

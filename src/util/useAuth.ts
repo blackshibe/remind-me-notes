@@ -1,14 +1,12 @@
 import { getAuth } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { FIREBASE_APP } from "../firebase";
-
-const auth = getAuth(FIREBASE_APP);
+import { FIREBASE_AUTH } from "../module/firebase";
 
 export const useAuthUser = () => {
-	let authUser = useState(auth.currentUser);
+	let authUser = useState(FIREBASE_AUTH.currentUser);
 
 	useEffect(() => {
-		let unsub = auth.onAuthStateChanged((user) => {
+		let unsub = FIREBASE_AUTH.onAuthStateChanged((user) => {
 			authUser[1](user);
 		});
 

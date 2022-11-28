@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, reset, setTheme, setTimeFormat, storeFirstVisit, timeFormat } from "../store";
+import { AppStoreState, reset, setTheme, setTimeFormat, storeFirstVisit, timeFormat } from "../module/app_store";
 import getAppTheme, { styles } from "../style/styles";
 import { Header } from "../component/Header";
 import { Button, useThemeMode } from "@rneui/themed";
@@ -8,10 +8,10 @@ import { View, Text } from "../style/customComponents";
 import { Switch } from "../component/Switch";
 import { IntroButton } from "../component/IntroButton";
 import { getAuth, signOut } from "firebase/auth";
-import { FIREBASE_APP, FIREBASE_AUTH } from "../firebase";
 import { useAuthUser } from "../util/useAuth";
 import quickWarnAlert from "../util/quickWarnAlert";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { FIREBASE_AUTH } from "../module/firebase";
 
 const AnimatedText = (props: { text: string }) => (
 	<Animated.View entering={FadeIn} exiting={FadeOut}>
@@ -77,6 +77,30 @@ export default function Settings() {
 
 					<IntroButton
 						text={"Reset app data"}
+						press={() => {
+							quickWarnAlert(() => {
+								store.dispatch(reset());
+								signOut(FIREBASE_AUTH);
+								store.dispatch(storeFirstVisit(false));
+							}, "are you sure you want to delete all your data? this will also delete all the changes in your sync account, and not sign you out.");
+						}}
+					/>
+				</View>
+
+				<View>
+					<Text style={styles.headerSmall}>Backups</Text>
+					<IntroButton
+						text={"Export app data"}
+						press={() => {
+							quickWarnAlert(() => {
+								store.dispatch(reset());
+								signOut(FIREBASE_AUTH);
+								store.dispatch(storeFirstVisit(false));
+							}, "are you sure you want to delete all your data? this will also delete all the changes in your sync account, and not sign you out.");
+						}}
+					/>
+					<IntroButton
+						text={"Import app data"}
 						press={() => {
 							quickWarnAlert(() => {
 								store.dispatch(reset());

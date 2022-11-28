@@ -1,10 +1,7 @@
 import { AnyAction, configureStore, createSlice, EnhancedStore, Reducer, ThunkMiddleware } from "@reduxjs/toolkit";
 import * as FileSystem from "expo-file-system";
-import { UserCredential } from "firebase/auth";
-import { ref, set } from "firebase/database";
-import { type } from "os";
 import { AppState, AppStateStatus } from "react-native";
-import { FIREBASE_AUTH, FIREBASE_DATABASE, readUserData, setUserData } from "./firebase";
+import { FIREBASE_AUTH, setUserData } from "./firebase";
 
 type wrap<T> = { payload: T; type: string };
 
@@ -15,7 +12,7 @@ interface baseNoteProperties {
 	session_id: number;
 
 	selected?: boolean;
-	pinned_image?: number;
+	pinned_image?: string;
 	files?: image[];
 }
 
@@ -30,8 +27,6 @@ export interface note extends baseNoteProperties {
 	type: "note";
 }
 
-type noteArray = reminder | note;
-
 export const enum imageType {
 	local,
 	uploading,
@@ -41,24 +36,19 @@ export const enum imageType {
 export type image =
 	| {
 			type: imageType;
-			uri: string;
-			id: number;
+			name: string;
 			width: number;
 			height: number;
 	  }
 	| {
 			type: imageType.uploading;
-			uri: string;
-			cloud_handle: string;
-			id: number;
+			name: string;
 			width: number;
 			height: number;
 	  }
 	| {
 			type: imageType.cloud;
-			uri: string;
-			cloud_handle: string;
-			id: number;
+			name: string;
 			width: number;
 			height: number;
 	  };
@@ -78,7 +68,7 @@ export const enum timeFormat {
 }
 
 export type AppStoreState = {
-	notes?: noteArray[];
+	notes?: Array<reminder | note>;
 
 	next_note_id: number;
 	next_file_id: number;
@@ -103,7 +93,7 @@ export type AppStoreState = {
 
 export type AppStore = EnhancedStore<AppStoreState, AnyAction, [ThunkMiddleware<AppStoreState, AnyAction, undefined>]>;
 
-const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v37.json`;
+export const STORAGE_LOCATION = `${FileSystem.documentDirectory}storage_v37.json`;
 
 let overwriteInitialState: AppStoreState | undefined = undefined;
 const INITIAL_STATE = (): AppStoreState => {
@@ -142,14 +132,11 @@ let todosSlice = createSlice({
 				if (!note.files) note.files = [];
 				note.files.push({
 					type: imageType.local,
-					id: state.next_file_id,
-					uri: action.payload.file.uri,
+					name: action.payload.file.uri,
 					height: action.payload.file.height,
 					width: action.payload.file.width,
 				});
 			}
-
-			state.next_file_id += 1;
 		},
 
 		beginFileUpload(
@@ -161,52 +148,44 @@ let todosSlice = createSlice({
 				if (!note.files) note.files = [];
 				note.files.push({
 					type: imageType.uploading,
-					id: state.next_file_id,
-					uri: action.payload.file.uri,
+					name: action.payload.file.uri,
 					height: action.payload.file.height,
 					width: action.payload.file.width,
 				});
 			}
-
-			state.next_file_id += 1;
 		},
 
 		finishFileUpload(
 			state: AppStoreState,
 			action: wrap<{
-				file: { cloud_handle: string; uri: string; height: number; width: number };
-				id: number;
-				file_id: number;
+				file: { uri: string; height: number; width: number };
+				imageUri: string;
+				fileId: number;
 			}>
 		) {
-			let note = state.notes?.find((value) => value.id === action.payload.id);
+			let note = state.notes?.find((value) => value.id === action.payload.fileId);
 			if (note && note.files) {
-				let file = note.files.find((value) => value.id === action.payload.file_id);
-				let index = note.files.findIndex((value) => value.id === action.payload.file_id);
+				let index = note.files.findIndex((value) => value.name === action.payload.imageUri);
 
-				if (file) {
+				if (index) {
 					note.files[index] = {
 						type: imageType.cloud,
-						cloud_handle: action.payload.file.cloud_handle,
-						uri: action.payload.file.uri,
-						id: state.next_file_id,
+						name: action.payload.imageUri,
 						height: action.payload.file.height,
 						width: action.payload.file.width,
 					};
 				}
 			}
-
-			state.next_file_id += 1;
 		},
 
-		deleteFile(state: AppStoreState, action: wrap<{ note_id: number; file_id: number }>) {
-			let note = state.notes?.find((value) => value.id === action.payload.note_id);
-			if (note?.files) note.files = note.files.filter((value) => action.payload.file_id != value.id);
+		deleteFile(state: AppStoreState, action: wrap<{ noteId: number; imageName: string }>) {
+			let note = state.notes?.find((value) => value.id === action.payload.noteId);
+			if (note?.files) note.files = note.files.filter((value) => action.payload.imageName != value.name);
 		},
 
-		pinFile(state: AppStoreState, action: wrap<{ note_id: number; file_id: number | undefined }>) {
-			let note = state.notes?.find((value) => value.id === action.payload.note_id);
-			if (note) note.pinned_image = action.payload.file_id;
+		pinFile(state: AppStoreState, action: wrap<{ noteId: number; imageName: string | undefined }>) {
+			let note = state.notes?.find((value) => value.id === action.payload.noteId);
+			if (note) note.pinned_image = action.payload.imageName;
 		},
 
 		addNote(state: AppStoreState, action: wrap<{ text: string; header: string }>) {
@@ -224,12 +203,12 @@ let todosSlice = createSlice({
 			state.next_note_id += 1;
 			state.store_initialized = true;
 		},
-		addReminder(state: AppStoreState, action: wrap<{ text: string; notification_id: string; date: number }>) {
+		addReminder(state: AppStoreState, action: wrap<{ text: string; notificationId: string; date: number }>) {
 			if (!state.notes) state.notes = [];
 			state.notes.push({
 				type: "reminder",
 				header: "Reminder",
-				notification_id: action.payload.notification_id,
+				notification_id: action.payload.notificationId,
 				due_time: action.payload.date,
 				text: action.payload.text,
 				id: state.next_note_id,
@@ -375,6 +354,10 @@ export async function createStore() {
 			FileSystem.writeAsStringAsync(STORAGE_LOCATION, JSON.stringify(storeState));
 		}
 	});
+
+	try {
+		FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}/images`);
+	} catch (err) {}
 
 	let storeDirty = false;
 	const saveLoop = () => {

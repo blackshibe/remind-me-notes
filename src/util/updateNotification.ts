@@ -1,11 +1,13 @@
-import { AppStore, reminder, setReminderNotificationId } from "../store";
+import { AppStore, reminder, setReminderNotificationId } from "../module/app_store";
 import * as Notifications from "expo-notifications";
 
 export const updateNotification = (store: AppStore, reminder: reminder) => {
 	let unsubscribe = store.subscribe(() => {
 		unsubscribe();
 
-		let newReminder = store.getState().reminders?.find((value) => value.id === reminder.id);
+		let newReminder = store
+			.getState()
+			.notes?.find((value) => value.type === "reminder" && value.id === reminder.id) as reminder;
 
 		Notifications.cancelScheduledNotificationAsync(reminder.notification_id);
 		if (!newReminder) return;
@@ -25,7 +27,9 @@ export const updateNotification = (store: AppStore, reminder: reminder) => {
 
 export const updateNotifications = (store: AppStore) => {
 	Notifications.cancelAllScheduledNotificationsAsync();
-	store.getState().reminders?.forEach((reminder) => {
+	store.getState().notes?.forEach((reminder) => {
+		if (reminder.type !== "reminder") return;
+
 		let unsubscribe = store.subscribe(() => {
 			unsubscribe();
 

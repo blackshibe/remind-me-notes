@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { get, getDatabase, ref, set } from "firebase/database";
-import { AppStore, AppStoreState } from "./store";
-import { ensureNoSerializables } from "./util/ensureNoSerializables";
 import { getStorage } from "firebase/storage";
+import { ensureNoSerializables } from "../util/ensureNoSerializables";
+import { AppStoreState } from "./app_store";
 import { SECRETS } from "./secrets";
 
 const firebaseConfig = {

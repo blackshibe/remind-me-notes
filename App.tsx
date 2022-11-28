@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Provider } from "react-redux";
 import { useFonts } from "expo-font";
-import { AppStore, createStore, setPushToken } from "./src/store";
+import { AppStore, createStore, setPushToken } from "./src/module/app_store";
 import * as Notifications from "expo-notifications";
 import usePromise from "./src/util/usePromise";
 import { ThemeProvider } from "@rneui/themed";

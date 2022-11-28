@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { timeFormat } from "../store";
+import { timeFormat } from "../module/app_store";
 
 const HOUR_IN_SECONDS = 60 * 60;
 const DAY_IN_SECONDS = HOUR_IN_SECONDS * 24;

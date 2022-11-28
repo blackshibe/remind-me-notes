@@ -6,13 +6,15 @@ import { BottomBarButton } from "./BottomBarButton";
 import { TouchableOpacity, View } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import getAppTheme from "../style/styles";
-import { deleteFile, image, openImage, pinFile } from "../store";
+import { deleteFile, image, openImage, pinFile } from "../module/app_store";
+import { delete_local_image, useLocalImage } from "../module/local_images";
 
-type fileSampleProps = { note_id: number; index: number; type: string; full: boolean; data: image };
-export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
+type fileSampleProps = { noteId: number; index: number; type: string; full: boolean; data: image };
+export const FileSample = ({ index, noteId: note_id, data, type }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
 	const mainStyle = getAppTheme();
 	let store = useStore();
+	let uri = useLocalImage(data.name);
 
 	return (
 		<TouchableOpacity
@@ -40,7 +42,8 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 						style={{ margin: 0, marginBottom: 4 }}
 						onclick={() =>
 							quickWarnAlert(() => {
-								store.dispatch(deleteFile({ file_id: data.id, note_id }));
+								delete_local_image(data.name);
+								store.dispatch(deleteFile({ imageName: data.name, noteId: note_id }));
 							}, "Do you want to delete this file?")
 						}
 						name={"trash"}
@@ -62,7 +65,7 @@ export const FileSample = ({ index, note_id, data, type }: fileSampleProps) => {
 				>
 					<Animated.Image
 						entering={FadeIn}
-						source={{ uri: data.uri }}
+						source={{ uri }}
 						style={{
 							width: "100%",
 							height: "100%",

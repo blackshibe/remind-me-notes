@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, Button, Text } from "react-native";
 import { StyleSheet } from "react-native";
 import { useSelector, useStore } from "react-redux";
-import { addReminder, addNote, AppStoreState, deleteNote } from "../store";
+import { addReminder, addNote, AppStoreState, deleteNote } from "../module/app_store";
 import { Icon } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import getAppTheme, { ACCENT, SELECT } from "../style/styles";
@@ -43,7 +43,7 @@ export const RemindersHeader = (props: { route: { name?: string } }): JSX.Elemen
 			trigger: { channelId: "default", date },
 		});
 
-		store.dispatch(addReminder({ text: "", notification_id, date }));
+		store.dispatch(addReminder({ text: "", notificationId: notification_id, date }));
 	};
 
 	return (
