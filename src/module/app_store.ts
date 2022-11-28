@@ -355,9 +355,7 @@ export async function createStore() {
 		}
 	});
 
-	try {
-		FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}/images`);
-	} catch (err) {}
+	FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}/images`).catch(() => {});
 
 	let storeDirty = false;
 	const saveLoop = () => {
