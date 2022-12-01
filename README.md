@@ -55,7 +55,9 @@ FIREBASE_APP_ID= ...
 -   layout changes are janky when animated in Notes and Reminders view
 -   exporting your data to json
 -   deleting images carries over hook states from the previous index
+-   update firebase perms
 
 ## testing
 
+-   make sure notifications still work
 -   make sure notifications carry over when restoring cloud state
