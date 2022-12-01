@@ -4,7 +4,7 @@ import ImageZoom from "react-native-image-pan-zoom";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, deleteFile, image, pinFile } from "../module/app_store";
-import { useLocalImage } from "../module/local_images";
+import { useImage } from "../module/images";
 import { Text, View } from "../style/customComponents";
 import getAppTheme from "../style/styles";
 import quickWarnAlert from "../util/quickWarnAlert";
@@ -25,7 +25,7 @@ export const ImageView = ({
 	let notes = useSelector((state: AppStoreState) => state.notes);
 	let note = notes?.find((value) => value.id === note_id);
 	let isPinned = note?.pinned_image === selectedImage.name;
-	let uri = useLocalImage(selectedImage.name);
+	let uri = useImage(selectedImage);
 
 	return (
 		<View>

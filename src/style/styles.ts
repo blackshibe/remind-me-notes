@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
 	},
 
 	note: {
-		borderRadius: 16,
+		borderRadius: 8,
 		margin: 8,
 	},
 

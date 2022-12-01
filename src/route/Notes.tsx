@@ -8,7 +8,7 @@ import { Header } from "../component/NotesHeader";
 import { View, Text } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle } from "react-native-reanimated";
 import { NoteFiles } from "../component/NoteFiles";
-import { useLocalImage } from "../module/local_images";
+import { useImage } from "../module/images";
 
 type dragInfo = { x: number; y: number; width: number; height: number; noteId: number };
 type extraItemProps = {
@@ -37,7 +37,7 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 	let truncatedText = element.text.length > 70 ? `${element.text.substring(0, 120)}...` : element.text;
 	let pinnedImage = element.files?.find((value) => value.name === element.pinned_image);
 	let fullscreenImage = pinnedImage && !element.header && !element.text;
-	let uri = useLocalImage(pinnedImage?.name);
+	let uri = useImage(pinnedImage);
 
 	const animatedSelection = useAnimatedStyle(() => {
 		return {
@@ -91,9 +91,9 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 									width: "100%",
 									aspectRatio: Math.max(pinnedImage.width / pinnedImage.height, 0.75),
 									resizeMode: "contain",
-									borderBottomLeftRadius: 16,
-									borderBottomRightRadius: 16,
-									borderRadius: fullscreenImage ? 16 : undefined,
+									borderBottomLeftRadius: 8,
+									borderBottomRightRadius: 8,
+									borderRadius: fullscreenImage ? 8 : undefined,
 								},
 								animatedSelection,
 							]}

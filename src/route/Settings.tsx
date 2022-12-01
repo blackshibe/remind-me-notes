@@ -92,21 +92,13 @@ export default function Settings() {
 					<IntroButton
 						text={"Export app data"}
 						press={() => {
-							quickWarnAlert(() => {
-								store.dispatch(reset());
-								signOut(FIREBASE_AUTH);
-								store.dispatch(storeFirstVisit(false));
-							}, "are you sure you want to delete all your data? this will also delete all the changes in your sync account, and not sign you out.");
+							console.log("TODO");
 						}}
 					/>
 					<IntroButton
 						text={"Import app data"}
 						press={() => {
-							quickWarnAlert(() => {
-								store.dispatch(reset());
-								signOut(FIREBASE_AUTH);
-								store.dispatch(storeFirstVisit(false));
-							}, "are you sure you want to delete all your data? this will also delete all the changes in your sync account, and not sign you out.");
+							console.log("TODO");
 						}}
 					/>
 				</View>

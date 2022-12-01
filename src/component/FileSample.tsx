@@ -7,14 +7,14 @@ import { TouchableOpacity, View } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import getAppTheme from "../style/styles";
 import { deleteFile, image, openImage, pinFile } from "../module/app_store";
-import { delete_local_image, useLocalImage } from "../module/local_images";
+import { delete_local_image, useImage } from "../module/images";
 
 type fileSampleProps = { noteId: number; index: number; type: string; full: boolean; data: image };
 export const FileSample = ({ index, noteId: note_id, data, type }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
 	const mainStyle = getAppTheme();
 	let store = useStore();
-	let uri = useLocalImage(data.name);
+	let uri = useImage(data);
 
 	return (
 		<TouchableOpacity

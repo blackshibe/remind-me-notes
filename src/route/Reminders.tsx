@@ -9,7 +9,7 @@ import { View, Text, TouchableOpacity } from "../style/customComponents";
 import getAppTheme, { ACCENT, SELECT, SPRING_PROPERTIES, styles } from "../style/styles";
 import { NoteFiles } from "../component/NoteFiles";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { useLocalImage } from "../module/local_images";
+import { useImage } from "../module/images";
 
 const pastDue = {
 	backgroundColor: ACCENT,
@@ -53,7 +53,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 	});
 
 	let pinnedImage = element.files?.find((value) => value.name === element.pinned_image);
-	let uri = useLocalImage(pinnedImage?.name);
+	let uri = useImage(pinnedImage);
 
 	return (
 		<Animated.View
@@ -99,8 +99,8 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 
 									aspectRatio: Math.max(pinnedImage.width / pinnedImage.height, 0.75),
 									resizeMode: "contain",
-									borderBottomLeftRadius: 16,
-									borderBottomRightRadius: 16,
+									borderBottomLeftRadius: 8,
+									borderBottomRightRadius: 8,
 								},
 								animatedSelection,
 							]}

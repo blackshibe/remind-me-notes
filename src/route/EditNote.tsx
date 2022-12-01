@@ -28,7 +28,7 @@ import { ImageView } from "../component/ImageView";
 import { ref, uploadBytes, uploadString } from "firebase/storage";
 import * as FileSystem from "expo-file-system";
 import { FIREBASE_AUTH, FIREBASE_STORAGE } from "../module/firebase";
-import { upload_local_image } from "../module/local_images";
+import { upload_local_image } from "../module/images";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -220,8 +220,9 @@ export default function EditNote(props: editNoteProps) {
 								})
 							);
 
-							FileSystem.readAsStringAsync(result.uri).then((element) => {
-								uploadString(imageRef, element).then((snapshot) => {
+							let element = `data:image/jpeg;base64,${result.base64}`;
+							uploadString(imageRef, element)
+								.then((snapshot) => {
 									console.log("Uploaded a blob or file!");
 
 									store.dispatch(
@@ -235,8 +236,10 @@ export default function EditNote(props: editNoteProps) {
 											},
 										})
 									);
+								})
+								.catch((err) => {
+									console.log("error while uploading string: ", err);
 								});
-							});
 						} else if (result.base64) {
 							upload_local_image(image_uri, result.base64);
 							store.dispatch(
