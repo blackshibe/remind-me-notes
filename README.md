@@ -50,15 +50,11 @@ FIREBASE_APP_ID= ...
 
 ## todo
 
--   images over firebase
--   uploading images to the cloud
 -   syncing images to the cloud
--   caching images locally from the cloud
-    https://firebase.google.com/docs/storage/web/upload-files
-
+-   "is online" cloud icon
+-   layout changes are janky when animated in Notes and Reminders view
 -   exporting your data to json
 -   deleting images carries over hook states from the previous index
--   pinned images do not appear until the app reloads for whatever reason
 
 ## testing
 
