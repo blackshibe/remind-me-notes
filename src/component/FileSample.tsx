@@ -1,20 +1,21 @@
 import React, { useState } from "react";
-import { Vibration } from "react-native";
+import { Vibration, Text } from "react-native";
 import { useStore } from "react-redux";
 import quickWarnAlert from "../util/quickWarnAlert";
 import { BottomBarButton } from "./BottomBarButton";
 import { TouchableOpacity, View } from "../style/customComponents";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import getAppTheme from "../style/styles";
-import { deleteFile, image, openImage, pinFile } from "../module/app_store";
+import { deleteFile, image, imageType, openImage, pinFile } from "../module/app_store";
 import { delete_local_image, useImage } from "../module/images";
+import { Icon } from "@rneui/themed";
 
-type fileSampleProps = { noteId: number; index: number; type: string; full: boolean; data: image };
-export const FileSample = ({ index, noteId: note_id, data, type }: fileSampleProps) => {
+type fileSampleProps = { noteId: number; index: string | number; type: string; full: boolean; data: image };
+export const FileSample = ({ index, noteId: note_id, data: selectedImage, type }: fileSampleProps) => {
 	let [selected, setSelected] = useState(false);
 	const mainStyle = getAppTheme();
 	let store = useStore();
-	let uri = useImage(data);
+	let uri = useImage(selectedImage);
 
 	return (
 		<TouchableOpacity
@@ -30,7 +31,7 @@ export const FileSample = ({ index, noteId: note_id, data, type }: fileSamplePro
 				Vibration.vibrate(50);
 				setSelected(true);
 			}}
-			onPress={() => store.dispatch(openImage(data))}
+			onPress={() => store.dispatch(openImage(selectedImage))}
 		>
 			{selected ? (
 				<View
@@ -42,8 +43,8 @@ export const FileSample = ({ index, noteId: note_id, data, type }: fileSamplePro
 						style={{ margin: 0, marginBottom: 4 }}
 						onclick={() =>
 							quickWarnAlert(() => {
-								delete_local_image(data.name);
-								store.dispatch(deleteFile({ imageName: data.name, noteId: note_id }));
+								delete_local_image(selectedImage.name);
+								store.dispatch(deleteFile({ imageName: selectedImage.name, noteId: note_id }));
 							}, "Do you want to delete this file?")
 						}
 						name={"trash"}
@@ -76,6 +77,24 @@ export const FileSample = ({ index, noteId: note_id, data, type }: fileSamplePro
 					/>
 				</Animated.View>
 			)}
+			<View
+				style={{
+					position: "absolute",
+					display: "flex",
+					justifyContent: "flex-start",
+					bottom: 8,
+					left: 8,
+					backgroundColor: "rgba(0,0,0,0)",
+				}}
+			>
+				{selectedImage.type !== imageType.local && (
+					<Icon
+						name={selectedImage.type == imageType.cloud ? "cloud" : "file-upload"}
+						size={16}
+						color={"white"}
+					/>
+				)}
+			</View>
 		</TouchableOpacity>
 	);
 };

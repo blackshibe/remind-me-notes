@@ -28,9 +28,9 @@ export interface note extends baseNoteProperties {
 }
 
 export const enum imageType {
-	local,
-	uploading,
-	cloud,
+	local = "local",
+	uploading = "uploading",
+	cloud = "cloud",
 }
 
 export type image =
@@ -141,9 +141,9 @@ let todosSlice = createSlice({
 
 		beginFileUpload(
 			state: AppStoreState,
-			action: wrap<{ file: { uri: string; height: number; width: number }; id: number }>
+			action: wrap<{ file: { uri: string; height: number; width: number }; noteId: number }>
 		) {
-			let note = state.notes?.find((value) => value.id === action.payload.id);
+			let note = state.notes?.find((value) => value.id === action.payload.noteId);
 			if (note) {
 				if (!note.files) note.files = [];
 				note.files.push({
@@ -159,18 +159,17 @@ let todosSlice = createSlice({
 			state: AppStoreState,
 			action: wrap<{
 				file: { uri: string; height: number; width: number };
-				imageUri: string;
-				fileId: number;
+				noteId: number;
 			}>
 		) {
-			let note = state.notes?.find((value) => value.id === action.payload.fileId);
+			let note = state.notes?.find((value) => value.id === action.payload.noteId);
 			if (note && note.files) {
-				let index = note.files.findIndex((value) => value.name === action.payload.imageUri);
+				let index = note.files.findIndex((value) => value.name === action.payload.file.uri);
 
-				if (index) {
+				if (index !== undefined) {
 					note.files[index] = {
 						type: imageType.cloud,
-						name: action.payload.imageUri,
+						name: action.payload.file.uri,
 						height: action.payload.file.height,
 						width: action.payload.file.width,
 					};

@@ -1,18 +1,31 @@
 import React from "react";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, reset, setTheme, setTimeFormat, storeFirstVisit, timeFormat } from "../module/app_store";
+import {
+	AppStore,
+	AppStoreState,
+	overwriteUserData,
+	reset,
+	setTheme,
+	setTimeFormat,
+	storeFirstVisit,
+	timeFormat,
+} from "../module/app_store";
 import getAppTheme, { styles } from "../style/styles";
 import { Header } from "../component/Header";
-import { Button, useThemeMode } from "@rneui/themed";
+import { useThemeMode } from "@rneui/themed";
 import { View, Text } from "../style/customComponents";
 import { Switch } from "../component/Switch";
 import { IntroButton } from "../component/IntroButton";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { useAuthUser } from "../util/useAuth";
 import quickWarnAlert from "../util/quickWarnAlert";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { FIREBASE_AUTH } from "../module/firebase";
+import * as FileSystem from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
+import { ToastAndroid } from "react-native";
 
+const { StorageAccessFramework } = FileSystem;
 const AnimatedText = (props: { text: string }) => (
 	<Animated.View entering={FadeIn} exiting={FadeOut}>
 		<Text style={styles.settingsItem}>{props.text}</Text>
@@ -89,16 +102,72 @@ export default function Settings() {
 
 				<View>
 					<Text style={styles.headerSmall}>Backups</Text>
+					<Text style={{ marginBottom: 10 }}>Images are not backed up along with app data.</Text>
+
 					<IntroButton
 						text={"Export app data"}
 						press={() => {
-							console.log("TODO");
+							quickWarnAlert(
+								async () => {
+									let state = store.getState();
+									delete state.conflict;
+
+									let filename = new Date().toISOString();
+
+									// Requests permissions for external directory
+									const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync(
+										"RemindMe"
+									);
+
+									if (permissions.granted) {
+										// Gets SAF URI from response
+										const uri = permissions.directoryUri;
+
+										// Gets all files inside of selected directory
+										console.log(`${decodeURI(uri)}/${filename}`);
+										let safFileUri = await StorageAccessFramework.createFileAsync(
+											uri,
+											filename,
+											"application/json"
+										);
+
+										await StorageAccessFramework.writeAsStringAsync(
+											safFileUri,
+											JSON.stringify(state)
+										);
+
+										ToastAndroid.show("Data saved!", ToastAndroid.LONG);
+									} else {
+										ToastAndroid.show("Permissions denied, not saving file", ToastAndroid.LONG);
+									}
+								},
+								"You will now be prompted to select a folder to save your data in. It's best to create a new one.",
+								"Warning"
+							);
 						}}
 					/>
 					<IntroButton
 						text={"Import app data"}
-						press={() => {
-							console.log("TODO");
+						press={async () => {
+							let document = await DocumentPicker.getDocumentAsync({ type: "application/json" });
+
+							if (document.type === "cancel") {
+								ToastAndroid.show("Cancelled data import", ToastAndroid.LONG);
+								return;
+							}
+
+							let contents = await FileSystem.readAsStringAsync(document.uri);
+							let backup: AppStoreState = JSON.parse(contents);
+
+							quickWarnAlert(
+								() => {
+									store.dispatch(overwriteUserData(backup));
+								},
+								`The backup you imported has ${
+									backup.notes?.length || "no"
+								} notes. Do you want to overwrite it?`,
+								"Are you sure?"
+							);
 						}}
 					/>
 				</View>

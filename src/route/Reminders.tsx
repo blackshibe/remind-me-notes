@@ -11,10 +11,6 @@ import { NoteFiles } from "../component/NoteFiles";
 import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { useImage } from "../module/images";
 
-const pastDue = {
-	backgroundColor: ACCENT,
-};
-
 type extraItemProps = { store: AppStore; timeFormat: timeFormat; mainStyle: any };
 const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; extra: extraItemProps }) => {
 	const store = extra.store;
@@ -24,7 +20,7 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 	let isSelecting = reminders.find((value) => value.selected);
 
 	let dueDate = new Date(element.due_time);
-	let dueStyle = datePassed(dueDate) ? pastDue : undefined;
+	let dueStyle = datePassed(dueDate) ? styles.pastDue : undefined;
 	let convenientDate = getConvenientDate(dueDate);
 	let sessionId = useSelector<AppStoreState>((state) => state.session_id);
 	let dueString = datePassed(dueDate)
@@ -59,8 +55,6 @@ const Item = ({ setkey, element, extra }: { setkey: number; element: reminder; e
 		<Animated.View
 			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
 			style={{ justifyContent: "center" }}
-			exiting={FadeOut}
-			layout={Layout.springify().damping(1000).stiffness(1000)}
 		>
 			<TouchableOpacity
 				onPress={() => {
@@ -122,13 +116,15 @@ export default function Reminders() {
 	let [_f, forceRerender] = useState(0);
 	setTimeout(() => forceRerender(_f + 1), 1000);
 
+	const justReminders = notes.filter((value) => value.type === "reminder") as reminder[];
+
 	return (
 		<View style={styles.pageContainer}>
 			<RemindersHeader route={{ name: "Reminders" }} />
-			{notes.length === 0 && (
+			{justReminders.length === 0 && (
 				<Text style={{ width: "100%", textAlign: "center" }}>No reminders added yet...</Text>
 			)}
-			{notes.length !== 0 && (
+			{justReminders.length !== 0 && (
 				<ScrollView
 					style={{
 						flex: 1, // the number of columns you want to devide the screen into
@@ -138,7 +134,7 @@ export default function Reminders() {
 					}}
 				>
 					<MasonryList
-						data={notes.filter((value) => value.type === "reminder") as reminder[]}
+						data={justReminders}
 						renderer={Item}
 						columns={2}
 						extra_props={{ store, timeFormat, mainStyle }}

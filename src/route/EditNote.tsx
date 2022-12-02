@@ -21,20 +21,17 @@ import { getConvenientDate, getConvenientTime } from "../util/getConvenientTime"
 import { updateNotification } from "../util/updateNotification";
 import { BottomBarButton } from "../component/BottomBarButton";
 import { FileSample } from "../component/FileSample";
-import { Dimensions, FlatList } from "react-native";
+import { FlatList, ToastAndroid } from "react-native";
 import { TouchableOpacity, View, Text, TextInput } from "../style/customComponents";
 import { useNavigation } from "@react-navigation/native";
 import { ImageView } from "../component/ImageView";
-import { ref, uploadBytes, uploadString } from "firebase/storage";
-import * as FileSystem from "expo-file-system";
+import { ref, uploadString } from "firebase/storage";
 import { FIREBASE_AUTH, FIREBASE_STORAGE } from "../module/firebase";
 import { upload_local_image } from "../module/images";
 
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-type editNoteProps =
-	| { selected_id: number; type: "reminder"; navigation: any }
-	| { selected_id: number; type: "note"; navigation: any };
+type editNoteProps = { navigation: any } | { navigation: any };
 
 function uuid() {
 	return "xxxx-xxxx-xxx-xxxx".replace(/[x]/g, (c) => {
@@ -48,7 +45,9 @@ export default function EditNote(props: editNoteProps) {
 	const notes = useSelector((state: AppStoreState) => state.notes);
 	const navigation = useNavigation();
 	const timeFormat = useSelector((state: AppStoreState) => state.time_format);
-	const selectedNote = notes?.find((value) => value.id === props.selected_id)!;
+	const selectedNoteData = useSelector((state: AppStoreState) => state.selected_note)!;
+	const selectedNote = notes?.find((value) => value.id === selectedNoteData?.id)!;
+
 	const store = useStore<AppStoreState>();
 	const selectedImage = useSelector((state: AppStoreState) => state.selected_image);
 
@@ -84,7 +83,7 @@ export default function EditNote(props: editNoteProps) {
 				return;
 			}
 
-			if (props.type === "reminder") updateNotification(store, selectedNote as reminder);
+			if (selectedNoteData?.type === "reminder") updateNotification(store, selectedNote as reminder);
 		},
 		[selectedImage]
 	);
@@ -109,7 +108,7 @@ export default function EditNote(props: editNoteProps) {
 							placeholderTextColor={"grey"}
 							onChangeText={(new_header) => {
 								header = new_header;
-								store.dispatch(editNote({ id: props.selected_id, header, text }));
+								store.dispatch(editNote({ id: selectedNoteData.id, header, text }));
 							}}
 							defaultValue={header}
 						/>
@@ -117,7 +116,7 @@ export default function EditNote(props: editNoteProps) {
 						<TouchableOpacity
 							style={styles.header}
 							onPress={() => {
-								store.dispatch(pickReminderDate({ type: "date", id: props.selected_id }));
+								store.dispatch(pickReminderDate({ type: "date", id: selectedNoteData.id }));
 							}}
 						>
 							<Text style={[mainStyle, styles.header]}>Due {getConvenientDate(dueDate)}</Text>
@@ -136,9 +135,9 @@ export default function EditNote(props: editNoteProps) {
 						textAlignVertical={"top"}
 						onChangeText={(new_text) => {
 							text = new_text;
-							if (props.type === "reminder")
-								store.dispatch(editReminder({ id: props.selected_id, text }));
-							else store.dispatch(editNote({ id: props.selected_id, text }));
+							if (selectedNoteData.type === "reminder")
+								store.dispatch(editReminder({ id: selectedNoteData.id, text }));
+							else store.dispatch(editNote({ id: selectedNoteData.id, text }));
 						}}
 						defaultValue={text}
 					/>
@@ -152,9 +151,9 @@ export default function EditNote(props: editNoteProps) {
 								return (
 									<FileSample
 										noteId={selectedNote.id}
-										type={props.type}
+										type={selectedNoteData.type}
 										full={false}
-										index={index}
+										index={item.name}
 										data={item}
 									/>
 								);
@@ -198,24 +197,24 @@ export default function EditNote(props: editNoteProps) {
 
 						if (result.cancelled) return;
 						if (result.type === "video") return;
+						if (!result.base64) return;
 
 						const image_uri = `images/${uuid()}-${uuid()}-${result.fileName || "unknown"}`;
+						upload_local_image(image_uri, result.base64);
 
 						if (FIREBASE_AUTH.currentUser) {
-							console.log("uploading image to cloud");
-							const imageRef = ref(FIREBASE_STORAGE, image_uri);
-							console.log(image_uri);
+							ToastAndroid.show("Uploading image...", ToastAndroid.SHORT);
+							const imageRef = ref(FIREBASE_STORAGE, `${FIREBASE_AUTH.currentUser.uid}/${image_uri}`);
 
-							let file_id = store.getState().next_file_id;
 							let file = {
-								uri: result.uri,
+								uri: image_uri,
 								height: result.height,
 								width: result.width,
 							};
 
 							store.dispatch(
 								beginFileUpload({
-									id: selectedNote.id,
+									noteId: selectedNote.id,
 									file,
 								})
 							);
@@ -223,25 +222,19 @@ export default function EditNote(props: editNoteProps) {
 							let element = `data:image/jpeg;base64,${result.base64}`;
 							uploadString(imageRef, element)
 								.then((snapshot) => {
-									console.log("Uploaded a blob or file!");
+									ToastAndroid.show("Finished uploading!", ToastAndroid.SHORT);
 
 									store.dispatch(
 										finishFileUpload({
-											imageUri: image_uri,
-											fileId: file_id,
-											file: {
-												uri: file.uri,
-												height: file.height,
-												width: file.width,
-											},
+											noteId: selectedNote.id,
+											file,
 										})
 									);
 								})
 								.catch((err) => {
 									console.log("error while uploading string: ", err);
 								});
-						} else if (result.base64) {
-							upload_local_image(image_uri, result.base64);
+						} else {
 							store.dispatch(
 								attachFile({
 									id: selectedNote.id,
@@ -252,8 +245,6 @@ export default function EditNote(props: editNoteProps) {
 									},
 								})
 							);
-						} else {
-							throw "failed to upload image!!!";
 						}
 					}}
 					name={"image"}

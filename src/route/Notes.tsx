@@ -10,13 +10,9 @@ import Animated, { FadeIn, FadeOut, Layout, useAnimatedStyle } from "react-nativ
 import { NoteFiles } from "../component/NoteFiles";
 import { useImage } from "../module/images";
 
-type dragInfo = { x: number; y: number; width: number; height: number; noteId: number };
 type extraItemProps = {
 	store: AppStore;
 	mainStyle: { backgroundColor: string; color: string };
-
-	dragInfo: dragInfo | undefined;
-	setDragInfo: (arg: dragInfo | undefined) => void;
 };
 
 const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra: extraItemProps }) => {
@@ -51,8 +47,6 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 		<Animated.View
 			style={[{ justifyContent: "center" }]}
 			entering={sessionId === element.session_id ? FadeIn : FadeIn.delay(setkey * 50)}
-			exiting={FadeOut}
-			layout={Layout.springify().damping(1000).stiffness(1000)}
 			key={setkey}
 		>
 			<TouchableOpacity
@@ -107,19 +101,21 @@ const Item = ({ extra, element, setkey }: { setkey: number; element: note; extra
 
 export default function Notes() {
 	const mainStyle = getAppTheme();
-	const todos = useSelector((state: AppStoreState) => state.notes) || [];
+	const notes = useSelector((state: AppStoreState) => state.notes) || [];
 	const store = useStore<AppStoreState>();
 
 	// remove later
-	const [dragInfo, setDragInfo] = useState<dragInfo | undefined>();
+
+	const justNotes = notes.filter((value) => value.type === "note") as note[];
 
 	return (
 		<View style={styles.pageContainer}>
 			<Header route={{ name: "Notes" }} />
-			{todos.length === 0 && <Text style={{ width: "100%", textAlign: "center" }}>No notes added yet...</Text>}
-			{todos.length !== 0 && (
+			{justNotes.length === 0 && (
+				<Text style={{ width: "100%", textAlign: "center" }}>No notes added yet...</Text>
+			)}
+			{justNotes.length !== 0 && (
 				<ScrollView
-					scrollEnabled={dragInfo == undefined}
 					style={{
 						flex: 1, // the number of columns you want to devide the screen into
 						marginHorizontal: "auto",
@@ -127,12 +123,7 @@ export default function Notes() {
 						width: "100%",
 					}}
 				>
-					<MasonryList
-						data={todos.filter((value) => value.type === "note") as note[]}
-						renderer={Item}
-						columns={2}
-						extra_props={{ store, mainStyle, dragInfo, setDragInfo }}
-					/>
+					<MasonryList data={justNotes} renderer={Item} columns={2} extra_props={{ store, mainStyle }} />
 				</ScrollView>
 			)}
 		</View>
