@@ -52,11 +52,11 @@ export default function Settings() {
 		);
 	};
 
-	let notifs = useState<NotificationRequest[]>([]);
+	// let notifs = useState<NotificationRequest[]>([]);
 
-	usePromise(async () => {
-		notifs[1](await Notifications.getAllScheduledNotificationsAsync());
-	});
+	// usePromise(async () => {
+	// 	notifs[1](await Notifications.getAllScheduledNotificationsAsync());
+	// });
 
 	return (
 		<View style={[styles.pageContainer]}>
@@ -181,13 +181,13 @@ export default function Settings() {
 					/>
 				</View>
 
-				{notifs[0].map((value, index) => (
+				{/* {notifs[0].map((value, index) => (
 					<View>
 						<Text style={{ color: "white" }}>{index}</Text>
 						<Text style={{ color: "white" }}>{value.content.title}</Text>
 						<Text style={{ color: "white" }}>{value.content.body}</Text>
 					</View>
-				))}
+				))} */}
 			</View>
 		</View>
 	);
