@@ -147,6 +147,7 @@ export default function EditNote(props: editNoteProps) {
 						<FlatList
 							data={files}
 							horizontal={true}
+							keyExtractor={(item, index) => item.name}
 							style={{ height: 128, width: "100%" }}
 							renderItem={({ item, index }) => {
 								return (

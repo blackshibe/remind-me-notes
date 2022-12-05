@@ -59,10 +59,8 @@ export const readUserData = async () => {
 };
 
 export const setUserData = (data: AppStoreState) => {
-	console.log("saving to firebase", "data/" + FIREBASE_AUTH.currentUser!.uid);
-
 	// https://stackoverflow.com/questions/34708566/firebase-update-failed-first-argument-contains-undefined-in-property#49122699
 	https: set(ref(FIREBASE_DATABASE, "data/" + FIREBASE_AUTH.currentUser!.uid), ensureNoSerializables(data)).then(
-		(value) => console.log("database written to")
+		(value) => console.log("saved user data")
 	);
 };

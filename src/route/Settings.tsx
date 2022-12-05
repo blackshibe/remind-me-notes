@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useStore } from "react-redux";
 import { AppStoreState, reset, setTheme, setTimeFormat, storeFirstVisit, timeFormat } from "../module/app_store";
 import getAppTheme, { styles } from "../style/styles";
@@ -12,6 +12,9 @@ import { useAuthUser } from "../util/useAuth";
 import quickWarnAlert from "../util/quickWarnAlert";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { FIREBASE_AUTH } from "../module/firebase";
+import * as Notifications from "expo-notifications";
+import usePromise from "../util/usePromise";
+import { NotificationRequest } from "expo-notifications";
 
 const AnimatedText = (props: { text: string }) => (
 	<Animated.View entering={FadeIn} exiting={FadeOut}>
@@ -35,6 +38,12 @@ export default function Settings() {
 			setTimeFormat(currentTimeFormat == timeFormat.twentyfour ? timeFormat.twelve : timeFormat.twentyfour)
 		);
 	};
+
+	let notifs = useState<NotificationRequest[]>([]);
+
+	usePromise(async () => {
+		notifs[1](await Notifications.getAllScheduledNotificationsAsync());
+	});
 
 	return (
 		<View style={[styles.pageContainer]}>
@@ -102,6 +111,14 @@ export default function Settings() {
 						}}
 					/>
 				</View>
+
+				{notifs[0].map((value, index) => (
+					<View>
+						<Text style={{ color: "white" }}>{index}</Text>
+						<Text style={{ color: "white" }}>{value.content.title}</Text>
+						<Text style={{ color: "white" }}>{value.content.body}</Text>
+					</View>
+				))}
 			</View>
 		</View>
 	);
