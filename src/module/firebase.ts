@@ -1,10 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, initializeAuth } from "firebase/auth";
 import { get, getDatabase, ref, set } from "firebase/database";
 import { getStorage } from "firebase/storage";
 import { ensureNoSerializables } from "../util/ensureNoSerializables";
 import { AppStoreState } from "./app_store";
 import { SECRETS } from "./secrets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
 	apiKey: SECRETS.FIREBASE_API_KEY,

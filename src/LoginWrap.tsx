@@ -7,12 +7,12 @@ import React from "react";
 import { useSelector } from "react-redux";
 import Route from "./Route";
 import Conflict from "./route/Conflict";
-import EditNoteRouter from "./route/EditNoteRouter";
 import Intro from "./route/Intro";
 import Login from "./route/Login";
 import PickReminderDate from "./route/PickReminderDate";
 import { AppStoreState } from "./module/app_store";
 import getAppTheme from "./style/styles";
+import EditNote from "./route/EditNote";
 
 export type appLoginTabNavigator = {
 	Intro: undefined;
@@ -25,7 +25,7 @@ const LoginTab = createStackNavigator<appLoginTabNavigator>();
 
 export const LoginWrap = () => {
 	let firstVisit = useSelector((state: AppStoreState) => state.first_visit_ended);
-	const { mode, setMode } = useThemeMode();
+	const { mode } = useThemeMode();
 
 	if (!firstVisit)
 		return (
@@ -53,7 +53,7 @@ export const LoginWrap = () => {
 				}}
 			>
 				<Stack.Screen name="Main" component={Route} />
-				<Stack.Screen name="Note" component={EditNoteRouter} />
+				<Stack.Screen name="Note" component={EditNote} />
 				<Stack.Screen name="PickReminderDate" component={PickReminderDate} />
 			</Stack.Navigator>
 		</NavigationContainer>

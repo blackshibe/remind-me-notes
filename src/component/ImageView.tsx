@@ -3,7 +3,7 @@ import { Dimensions } from "react-native";
 import ImageZoom from "react-native-image-pan-zoom";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSelector, useStore } from "react-redux";
-import { AppStoreState, deleteFile, image, pinFile } from "../module/app_store";
+import { AppStoreState, deleteFile, image, imageType, pinFile } from "../module/app_store";
 import { useImage } from "../module/images";
 import { Text, View } from "../style/customComponents";
 import getAppTheme from "../style/styles";
@@ -26,6 +26,9 @@ export const ImageView = ({
 	let note = notes?.find((value) => value.id === note_id);
 	let isPinned = note?.pinned_image === selectedImage.name;
 	let uri = useImage(selectedImage);
+
+	console.log("hello world");
+	console.log(selectedImage.type, selectedImage.type === imageType.cloud);
 
 	return (
 		<View>
@@ -50,20 +53,6 @@ export const ImageView = ({
 					}}
 				/>
 			</ImageZoom>
-			{/* <View
-				style={{
-					position: "absolute",
-					display: "flex",
-					width: "100%",
-					top: 24,
-					paddingRight: 16,
-					paddingLeft: 16,
-					backgroundColor: "rgba(0,0,0,0)",
-				}}
-			>
-				<Text>Added on the 24th Nov 2022</Text>
-				<Text>synced to cloud</Text>
-			</View> */}
 			<View
 				style={{
 					position: "absolute",

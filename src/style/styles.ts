@@ -71,4 +71,8 @@ export const styles = StyleSheet.create({
 		padding: 15,
 		borderRadius: 8,
 	},
+
+	pastDue: {
+		backgroundColor: ACCENT,
+	},
 });

@@ -1,4 +1,5 @@
 import React from "react";
+import { Layout } from "react-native-reanimated";
 import { View } from "../style/customComponents";
 
 type props<T, E> = {
@@ -30,11 +31,11 @@ export const MasonryList = <T, E>(props: props<T, E>): JSX.Element => {
 			{columns.map((value, index) => {
 				return (
 					<View
+						key={index}
 						style={{
 							flex: 1,
 							flexDirection: "column",
 						}}
-						key={index}
 					>
 						{value}
 					</View>

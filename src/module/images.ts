@@ -13,7 +13,6 @@ export const useImage = (image?: image) => {
 		// cloud image is a fallback
 		FileSystem.readAsStringAsync(`${FileSystem.documentDirectory}/${image.name}`)
 			.then((value) => {
-				// throw "lol";
 				setUri(value);
 			})
 			.catch(async (val) => {

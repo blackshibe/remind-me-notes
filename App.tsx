@@ -1,9 +1,7 @@
-console.log("app running");
-
 import { LogBox } from "react-native";
 
 // https://stackoverflow.com/questions/55311228/how-to-remove-warning-async-storage-has-been-extracted-from-react-native-core#55311388
-LogBox.ignoreLogs(["Async Storage has been extracted from react-native core"]);
+LogBox.ignoreLogs(["AsyncStorage"]);
 
 import React, { useState } from "react";
 import { Provider } from "react-redux";

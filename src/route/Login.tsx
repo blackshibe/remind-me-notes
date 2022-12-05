@@ -51,19 +51,12 @@ export default function Login(props: {}) {
 				<IntroButton
 					press={() => {
 						createUserWithEmailAndPassword(FIREBASE_AUTH, username[0] + "@whatever.com", passwd[0])
-							.then((userCredential) => {
-								const user = userCredential.user;
-								console.log("App created account as ", user.email);
-								console.log("local data initialized:", store.getState().store_initialized);
-
+							.then((user) => {
 								store.dispatch(storeFirstVisit(true));
 							})
 							.catch((error) => {
-								const errorCode = error.code;
 								const errorMessage = error.message;
-
 								fuckup[1](errorMessage);
-								console.log(errorCode, errorMessage);
 							});
 					}}
 					text="Register"
@@ -72,13 +65,9 @@ export default function Login(props: {}) {
 				<IntroButton
 					press={() => {
 						signInWithEmailAndPassword(FIREBASE_AUTH, username[0] + "@whatever.com", passwd[0])
-							.then(async (userCredential) => {
+							.then(async (user) => {
 								let local_state = store.getState();
 								let cloud_state = await readUserData();
-
-								console.log("app signed in as", userCredential.user.email);
-								console.log("local data initialized:", local_state.store_initialized);
-								console.log("cloud initialized:", cloud_state !== undefined);
 
 								let conflict_occuring =
 									cloud_state?.operation_id !== local_state.operation_id &&
@@ -99,7 +88,6 @@ export default function Login(props: {}) {
 								const errorMessage = error.message;
 
 								fuckup[1](errorMessage);
-								console.log(`failure while signing in: code=${errorCode} message=${errorMessage}`);
 							});
 					}}
 					text="Login"
